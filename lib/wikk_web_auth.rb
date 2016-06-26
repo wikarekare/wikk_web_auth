@@ -11,7 +11,7 @@ module WIKK
   #  @attr_reader [String] user , the remote user's user name 
   #  @attr_reader [String] session , the persistent Session record for this user
   class Web_Auth
-    VERSION = "0.1.0" #Gem version
+    VERSION = "0.1.1" #Gem version
     
     attr_reader :user, :session
     

@@ -11,6 +11,8 @@ Hoe.spec 'wikk_web_auth' do
   
   self.yard_title = 'wikk_web_auth'
   self.yard_options = ['--markup', 'markdown', '--protected']
+
+  self.dependency "wikk_password", [">= 0.1.0"]
 end
 
 
