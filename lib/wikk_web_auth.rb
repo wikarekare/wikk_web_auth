@@ -11,7 +11,7 @@ module WIKK
   #  @attr_reader [String] user , the remote user's user name 
   #  @attr_reader [String] session , the persistent Session record for this user
   class Web_Auth
-    VERSION = "0.0.1" #Gem version
+    VERSION = "0.1.0" #Gem version
     
     attr_reader :user, :session
     
@@ -44,7 +44,7 @@ module WIKK
   	def self.authenticated?(cgi)
       begin
           session = CGI::Session.new(cgi, Web_Auth.session_config({'new_session' => false}) )
-          authenticated = (session != nil && session['session_expires'] > Time.now && session['auth'] == 'true' && @session['ip'] == cgi.remote_addr)
+          authenticated = (session != nil && session['session_expires'] > Time.now && session['auth'] == true && session['ip'] == cgi.remote_addr)
           session.close #Writes back the session data
           return authenticated
       rescue ArgumentError => error # if no old session to find.
@@ -160,7 +160,7 @@ module WIKK
     #Test to see if user authenticated, 
     #  @return [Boolean] i.e @authenticated's value.
     def authenticated?
-      @session != nil && @session['session_expires'] > Time.now && @session['auth'] == 'true'
+      @session != nil && @session['session_expires'] > Time.now && @session['auth'] == true && session['ip'] == @cgi.remote_addr
     end
       
 
@@ -169,6 +169,7 @@ module WIKK
     def gen_html_login_page(return_url = nil)
       session_options = Web_Auth.session_config()
       @session = CGI::Session.new(@cgi, session_options) #Start a new session for future authentications.
+      raise "gen_html_login_page: @session == nil" if @session == nil
       challenge = WIKK::AES_256.gen_key_to_s
       session_state_init('auth' => false, 'seed' => challenge, 'ip' => "10.2.2.193", 'session_expires' => session_options['session_expires'])
       @cgi.header("type"=>"text/html")
@@ -185,7 +186,7 @@ module WIKK
     #Called by calling cgi, when constructing their html headers.
     #  @param url [String] URL to redirect to.
     #  @return [String] The HTML meta header, or "", if url is empty.
-    def html_reload(url)
+    def html_reload(url = nil)
       if url != nil && url != ''
         "<meta http-equiv=\"Refresh\" content=\"0; URL=#{url}\">\n"
       else
