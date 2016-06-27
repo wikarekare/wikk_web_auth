@@ -11,7 +11,7 @@ module WIKK
   #  @attr_reader [String] user , the remote user's user name 
   #  @attr_reader [String] session , the persistent Session record for this user
   class Web_Auth
-    VERSION = "0.1.1" #Gem version
+    VERSION = "0.1.2" #Gem version
     
     attr_reader :user, :session
     
@@ -241,9 +241,9 @@ module WIKK
     <tr><th>User name</th><td><input TYPE="text" NAME="Username" VALUE="#{user}" SIZE="32" MAXLENGTH="32"></td></tr>
     <tr><th>Password</th><td><input TYPE="password" NAME="Password" VALUE="" SIZE="32" MAXLENGTH="32"></td></tr>
     <tr><td>&nbsp;</td><td>
-      <input ONCLICK="sendhash(); return false;" TYPE="Submit" NAME="submit" VALUE="Submit">
+      <input ONCLICK="sendhash(); return false;" TYPE="submit" NAME="login" VALUE="Login">
       <input TYPE="button" NAME="Cancel" VALUE="   Cancel   " 
-      ONCLICK="document.login.Username.value='';document.login.Password.value=''">
+      ONCLICK="document.login.Username.value='';document.login.Password.value=';return false;'">
     </td></tr>
     </table>
     </form>
