@@ -11,7 +11,7 @@ module WIKK
   #  @attr_reader [String] user , the remote user's user name 
   #  @attr_reader [String] session , the persistent Session record for this user
   class Web_Auth
-    VERSION = "0.1.2" #Gem version
+    VERSION = "0.1.3" #Gem version
     
     attr_reader :user, :session
     
@@ -83,10 +83,10 @@ module WIKK
      begin
        return WIKK::Password.valid_sha256_response?(user, @config, challenge, received_hash)
      rescue IndexError => error #User didn't exist
-       @log.err("authorized?(#{user}): " + error.message)
+       @log.error("authorized?(#{user}): " + error.message)
        return false
      rescue Exception => error #Something else
-       @log.err("authorized?(#{user}): " + error.message)
+       @log.error("authorized?(#{user}): " + error.message)
        return false
      end
     end
@@ -171,7 +171,7 @@ module WIKK
       @session = CGI::Session.new(@cgi, session_options) #Start a new session for future authentications.
       raise "gen_html_login_page: @session == nil" if @session == nil
       challenge = WIKK::AES_256.gen_key_to_s
-      session_state_init('auth' => false, 'seed' => challenge, 'ip' => "10.2.2.193", 'session_expires' => session_options['session_expires'])
+      session_state_init('auth' => false, 'seed' => challenge, 'ip' => @cgi.remote_addr, 'session_expires' => session_options['session_expires'])
       @cgi.header("type"=>"text/html")
       @cgi.out do
         @cgi.html do
