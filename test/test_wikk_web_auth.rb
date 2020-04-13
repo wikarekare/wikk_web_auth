@@ -22,7 +22,7 @@ cgi = CGI.new("html5")
 @authenticated = WIKK::Web_Auth.authenticated?(cgi)
 puts @authenticated
 
-  conf = WIKK::Configuration.new('passwd.js')
+  conf = WIKK::Configuration.new(__dir__ + 'passwd.json')
   return_url = 'http://www.wikarekare.org'
   
   auth = WIKK::Web_Auth.new(cgi,conf, return_url)
