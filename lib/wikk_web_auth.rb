@@ -33,7 +33,7 @@ module WIKK
   	  begin
         @log = Syslog::Logger.syslog
       rescue
-        @log = Syslog::Logger.new("authlib.rbx")
+        @log = Syslog::Logger.new("wikk_web_auth")
       end
       authenticate(return_url) 
     end
@@ -51,7 +51,7 @@ module WIKK
     	  begin
           @log = Syslog::Logger.syslog
         rescue
-          @log = Syslog::Logger.new("authlib.rbx")
+          @log = Syslog::Logger.new("wikk_web_auth")
         end
         @log.error(error.message)
         return false
@@ -68,7 +68,7 @@ module WIKK
     	  begin
           @log = Syslog::Logger.syslog
         rescue
-          @log = Syslog::Logger.new("authlib.rbx")
+          @log = Syslog::Logger.new("wikk_web_auth")
         end
         @log.error(error.message)
       end
