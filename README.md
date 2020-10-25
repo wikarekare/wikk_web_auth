@@ -1,8 +1,8 @@
 # wikk_web_auth
 
-* http://wikarekare.github.com/wikk_web_auth/
-* Source https://github.com/wikarekare/wikk_web_auth
-* Gem https://rubygems.org/gems/wikk_web_auth
+* Docs :: https://wikarekare.github.io/wikk_web_auth/
+* Source :: https://github.com/wikarekare/wikk_web_auth
+* Gem :: https://rubygems.org/gems/wikk_web_auth
 
 ## DESCRIPTION:
 
