@@ -1,0 +1,14 @@
+gitdoc/
+doc/*
+doc/.DS_Store
+pkg/*
+pkg/.DS_Store
+Private/
+test_data/*.out
+.autotest
+.yardoc
+.yard
+History.txt
+.DS_Store
+lib/.DS_Store
+test/.DS_Store
