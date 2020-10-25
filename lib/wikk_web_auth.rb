@@ -7,19 +7,21 @@ module WIKK
   require "wikk_aes_256"
   require 'wikk_password'
 
-  #Provides common authentication mechanism for all our cgis.
-  #  @attr_reader [String] user , the remote user's user name 
-  #  @attr_reader [String] session , the persistent Session record for this user
+  # Provides common authentication mechanism for all our cgis.
+  #
+  # @attr_reader [String] user , the remote user's user name 
+  # @attr_reader [String] session , the persistent Session record for this user
   class Web_Auth
     VERSION = "0.1.3" #Gem version
     
     attr_reader :user, :session
     
-    #Create new Web_Auth instance, and proceed through authentication process by creating a login web form, if the user isn't authenticated.
-    #  @param cgi [CGI] Which carries the client data, cookies, and PUT/POST form data.
-    #  @param config [WIKK::Configuration|Hash] the location of the password file is embedded here.
-    #  @param return_url [String] If we successfully authenticate, return here.
-    #  @return [WIKK::Web_Auth]
+    # Create new Web_Auth instance, and proceed through authentication process by creating a login web form, if the user isn't authenticated.
+    #
+    # @param cgi [CGI] Which carries the client data, cookies, and PUT/POST form data.
+    # @param config [WIKK::Configuration|Hash] the location of the password file is embedded here.
+    # @param return_url [String] If we successfully authenticate, return here.
+    # @return [WIKK::Web_Auth]
   	def initialize(cgi, config, return_url = nil)
       if config.class == Hash
         sym = config.each_with_object({}) { |(k,v),h| h[k.to_sym] = v }
@@ -38,9 +40,10 @@ module WIKK
       authenticate(return_url) 
     end
 
-    #way of checking without doing a full login sequence.
-    #  @param cgi [CGI] Which carries the client data, cookies, and PUT/POST form data.
-    #  @return [Boolean] authenticated == true.
+    # way of checking without doing a full login sequence.
+    #
+    # @param cgi [CGI] Which carries the client data, cookies, and PUT/POST form data.
+    # @return [Boolean] authenticated == true.
   	def self.authenticated?(cgi)
       begin
           session = CGI::Session.new(cgi, Web_Auth.session_config({'new_session' => false}) )
@@ -58,8 +61,9 @@ module WIKK
       end
     end
 
-    #get the session reference and delete the session.
-    #  @param cgi [CGI] Which carries the client data, cookies, and PUT/POST form data.
+    # get the session reference and delete the session.
+    #
+    # @param cgi [CGI] Which carries the client data, cookies, and PUT/POST form data.
     def self.logout(cgi)
       begin
           session = CGI::Session.new(cgi, Web_Auth.session_config({'new_session' => false}))
@@ -74,11 +78,12 @@ module WIKK
       end
     end
     
-    #Checks password file to see if the response from the user matches generating a hash from the password locally.
-    #  @param user [String] Who the remote user claims to be
-    #  @param challenge [String] Random string we sent to this user, and they used in hashing their password.
-    #  @param received_hash [String] The hex_SHA256(password + challenge) string that the user sent back.
-    #  @return [Boolean] True for authorization test suceeded.
+    # Checks password file to see if the response from the user matches generating a hash from the password locally.
+    #
+    # @param user [String] Who the remote user claims to be
+    # @param challenge [String] Random string we sent to this user, and they used in hashing their password.
+    # @param received_hash [String] The hex_SHA256(password + challenge) string that the user sent back.
+    # @return [Boolean] True for authorization test suceeded.
     def authorized?(user, challenge, received_hash)
      begin
        return WIKK::Password.valid_sha256_response?(user, @config, challenge, received_hash)
@@ -91,9 +96,10 @@ module WIKK
      end
     end
 
-    #Generate the new Session's config parameters, mixing in and/or overriding the preset values.
-    #  @param extra_arguments [Hash] Extra arguments that get added to the hash, or override values with the same key.
-    #  @return [Hash] The configuration hash.
+    # Generate the new Session's config parameters, mixing in and/or overriding the preset values.
+    #
+    # @param extra_arguments [Hash] Extra arguments that get added to the hash, or override values with the same key.
+    # @return [Hash] The configuration hash.
     def self.session_config(extra_arguments = {})
       return {
         'database_manager' => CGI::Session::PStore,  # use PStore
@@ -116,8 +122,9 @@ module WIKK
       session_options.each { |k,v| @session[k] = v }
     end
 
-    #Test to see if we are already authenticated, and if not, generate an HTML login page.
-    #  @param return_url [String] We return here if we sucessfully login
+    # Test to see if we are already authenticated, and if not, generate an HTML login page.
+    #
+    # @param return_url [String] We return here if we sucessfully login
     def authenticate(return_url = nil)
       begin
         @session = CGI::Session.new(@cgi, Web_Auth.session_config({'new_session' => false})) #Look for existing session.
@@ -152,20 +159,23 @@ module WIKK
       @session.close if @session != nil #Saves the session state.
     end
 
-    #clean up the session, setting @authenticated to false and deleting the session state.
+    # clean up the session, setting @authenticated to false and deleting the session state.
+    #
     def logout 
       @session.delete if @session != nil
     end
 
-    #Test to see if user authenticated, 
-    #  @return [Boolean] i.e @authenticated's value.
+    # Test to see if user authenticated
+    #
+    # @return [Boolean] i.e @authenticated's value.
     def authenticated?
       @session != nil && @session['session_expires'] > Time.now && @session['auth'] == true && session['ip'] == @cgi.remote_addr
     end
       
 
-    #Used by calling cgi to generate a standard login page
-    #  @param return_url [String] We return here if we sucessfully login
+    # Used by calling cgi to generate a standard login page
+    #
+    # @param return_url [String] We return here if we sucessfully login
     def gen_html_login_page(return_url = nil)
       session_options = Web_Auth.session_config()
       @session = CGI::Session.new(@cgi, session_options) #Start a new session for future authentications.
@@ -182,10 +192,11 @@ module WIKK
       @session.update
     end
 
-    #Used by calling cgi to inject a return URL into the html response. 
-    #Called by calling cgi, when constructing their html headers.
-    #  @param url [String] URL to redirect to.
-    #  @return [String] The HTML meta header, or "", if url is empty.
+    # Used by calling cgi to inject a return URL into the html response. 
+    # Called by calling cgi, when constructing their html headers.
+    #
+    # @param url [String] URL to redirect to.
+    # @return [String] The HTML meta header, or "", if url is empty.
     def html_reload(url = nil)
       if url != nil && url != ''
         "<meta http-equiv=\"Refresh\" content=\"0; URL=#{url}\">\n"
@@ -194,9 +205,10 @@ module WIKK
       end
     end
 
-    #Used by calling cgi to generate logout with this form.
-    #  @param cgi_dir [String] directory holding the login.rbx cgi.
-    #  @return [String] Html logout form.
+    # Used by calling cgi to generate logout with this form.
+    #
+    # @param cgi_dir [String] directory holding the login.rbx cgi.
+    # @return [String] Html logout form.
     def html_logout_form(cgi_dir)
       <<-EOHTMLF2
       <form NAME="login" ACTION="#{cgi_dir}/login.rbx" METHOD="post">
@@ -206,8 +218,9 @@ module WIKK
     end
     
     private 
-    #Login form javascript helper to SHA256 Hash a password and the challenge string sent by the server.
-    #  @return [String] Javascript to embed in html response.
+    # Login form javascript helper to SHA256 Hash a password and the challenge string sent by the server.
+    #
+    # @return [String] Javascript to embed in html response.
     def html_script
       <<-EOHTML
       <script type="text/javascript" src="/js/sha256.js"></script>
@@ -226,11 +239,12 @@ module WIKK
       EOHTML
     end
 
-    #Generate html login form.
-    #  @param user [String] user's login name.
-    #  @param challenge [String] Random bytes to add to password, before sending back to server.
-    #  @param return_url [String] Pass the url we want to return to if the login succeeds.
-    #  @return [String] Login form to embed in html response to user.
+    # Generate html login form.
+    #
+    # @param user [String] user's login name.
+    # @param challenge [String] Random bytes to add to password, before sending back to server.
+    # @param return_url [String] Pass the url we want to return to if the login succeeds.
+    # @return [String] Login form to embed in html response to user.
     def html_login_form(user, challenge, return_url='')
     <<-EOHTMLF
     <form NAME="login" ACTION="/ruby/login.rbx" METHOD="post">
@@ -253,8 +267,9 @@ module WIKK
     EOHTMLF
     end
 
-    #Generate no cache metadata header record.
-    #  @return [String] Html no-cache meta tag
+    # Generate no cache metadata header record.
+    #
+    # @return [String] Html no-cache meta tag
     def html_nocache
       "<META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">"
     end
