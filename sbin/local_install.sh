@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #Need to run from command line.
 . version
 
