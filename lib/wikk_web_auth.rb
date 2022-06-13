@@ -198,31 +198,31 @@ module WIKK
     #  @param cgi_dir [String] directory holding the login.rbx cgi.
     #  @return [String] Html logout form.
     def html_logout_form(cgi_dir)
-      <<-EOHTMLF2
-      <form NAME="login" ACTION="#{cgi_dir}/login.rbx" METHOD="post">
-      <input TYPE="submit" NAME="logout" VALUE="logout" >
-      </form>
-      EOHTMLF2
+      <<~HTML
+        <form NAME="login" ACTION="#{cgi_dir}/login.rbx" METHOD="post">
+        <input TYPE="submit" NAME="logout" VALUE="logout" >
+        </form>
+      HTML
     end
 
     # Login form javascript helper to SHA256 Hash a password and the challenge string sent by the server.
     #  @return [String] Javascript to embed in html response.
     private def html_script
-      <<-EOHTML
-      <script type="text/javascript" src="/js/sha256.js"></script>
+      <<~HTML
+        <script type="text/javascript" src="/js/sha256.js"></script>
 
-      <script language="JavaScript">
-      function sendhash() {
-          str = document.login.Password.value +
-              document.login.Challenge.value;
+        <script language="JavaScript">
+        function sendhash() {
+            str = document.login.Password.value +
+                document.login.Challenge.value;
 
-          document.login.Response.value = hex_sha256(str);
-          document.login.Password.value = "";
-          document.login.Challenge.value = "";
-          document.login.submit();
-      }
-      </script>
-      EOHTML
+            document.login.Response.value = hex_sha256(str);
+            document.login.Password.value = "";
+            document.login.Challenge.value = "";
+            document.login.submit();
+        }
+        </script>
+      HTML
     end
 
     # Generate html login form.
@@ -231,25 +231,25 @@ module WIKK
     #  @param return_url [String] Pass the url we want to return to if the login succeeds.
     #  @return [String] Login form to embed in html response to user.
     private def html_login_form(user, challenge, return_url = '')
-      <<-EOHTMLF
-    <form NAME="login" ACTION="/ruby/login.rbx" METHOD="post">
-    <input TYPE="hidden" NAME="Challenge" VALUE="#{challenge}">
-    <input TYPE="hidden" NAME="Response" VALUE="">
-    <input TYPE="hidden" NAME="ReturnURL" VALUE="#{return_url}">
-    <table>
-    <tr><th>User name</th><td><input TYPE="text" NAME="Username" VALUE="#{user}" SIZE="32" MAXLENGTH="32"></td></tr>
-    <tr><th>Password</th><td><input TYPE="password" NAME="Password" VALUE="" SIZE="32" MAXLENGTH="32"></td></tr>
-    <tr><td>&nbsp;</td><td>
-      <input ONCLICK="sendhash(); return false;" TYPE="submit" NAME="login" VALUE="Login">
-      <input TYPE="button" NAME="Cancel" VALUE="   Cancel   "
-      ONCLICK="document.login.Username.value='';document.login.Password.value=';return false;'">
-    </td></tr>
-    </table>
-    </form>
-    <script LANGUAGE="javascript" TYPE="text/javascript">
-          document.login.Username.focus();
-    </script>
-      EOHTMLF
+      <<~HTML
+        <form NAME="login" ACTION="/ruby/login.rbx" METHOD="post">
+        <input TYPE="hidden" NAME="Challenge" VALUE="#{challenge}">
+        <input TYPE="hidden" NAME="Response" VALUE="">
+        <input TYPE="hidden" NAME="ReturnURL" VALUE="#{return_url}">
+        <table>
+        <tr><th>User name</th><td><input TYPE="text" NAME="Username" VALUE="#{user}" SIZE="32" MAXLENGTH="32"></td></tr>
+        <tr><th>Password</th><td><input TYPE="password" NAME="Password" VALUE="" SIZE="32" MAXLENGTH="32"></td></tr>
+        <tr><td>&nbsp;</td><td>
+          <input ONCLICK="sendhash(); return false;" TYPE="submit" NAME="login" VALUE="Login">
+          <input TYPE="button" NAME="Cancel" VALUE="   Cancel   "
+          ONCLICK="document.login.Username.value='';document.login.Password.value=';return false;'">
+        </td></tr>
+        </table>
+        </form>
+        <script LANGUAGE="javascript" TYPE="text/javascript">
+              document.login.Username.focus();
+        </script>
+      HTML
     end
 
     # Generate no cache metadata header record.
