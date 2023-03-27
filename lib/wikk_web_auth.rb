@@ -21,13 +21,8 @@ module WIKK
     #  @param return_url [String] If we successfully authenticate, return here.
     #  @return [WIKK::Web_Auth]
     def initialize(cgi, config, return_url = nil)
-      if config.instance_of?(Hash)
-        sym = config.transform_keys(&:to_sym)
-        @config = Struct.new(*(k = sym.keys)).new(*sym.values_at(*k))
-      else
-        @config = config
-      end
       @cgi = cgi
+      @config = config
       @user = ''
       @session = nil
       begin
@@ -41,9 +36,9 @@ module WIKK
     # way of checking without doing a full login sequence.
     #  @param cgi [CGI] Which carries the client data, cookies, and PUT/POST form data.
     #  @return [Boolean] authenticated == true.
-    def self.authenticated?(cgi)
+    def self.authenticated?(cgi, config = nil)
       begin
-        session = CGI::Session.new(cgi, Web_Auth.session_config({ 'new_session' => false }) )
+        session = CGI::Session.new(cgi, Web_Auth.session_config(config, { 'new_session' => false }) )
         authenticated = (session != nil && session['session_expires'] > Time.now && session['auth'] == true && session['ip'] == cgi.remote_addr)
         session.close # Writes back the session data
         return authenticated
@@ -60,9 +55,9 @@ module WIKK
 
     # get the session reference and delete the session.
     #  @param cgi [CGI] Which carries the client data, cookies, and PUT/POST form data.
-    def self.logout(cgi)
+    def self.logout(cgi, config = nil)
       begin
-        session = CGI::Session.new(cgi, Web_Auth.session_config({ 'new_session' => false }))
+        session = CGI::Session.new(cgi, Web_Auth.session_config(config, { 'new_session' => false }))
         session.delete if session != nil
       rescue ArgumentError => e # if no old session
         begin
@@ -94,22 +89,26 @@ module WIKK
     # Generate the new Session's config parameters, mixing in and/or overriding the preset values.
     #  @param extra_arguments [Hash] Extra arguments that get added to the hash, or override values with the same key.
     #  @return [Hash] The configuration hash.
-    def self.session_config(extra_arguments = {})
-      return {
-        'database_manager' => CGI::Session::PStore,  # use PStore
-        'session_key' => '_wikk_rb_sess_id',              # custom session key
-        # 'session_id' => ?,
-        'session_expires' => (Time.now + 86400),     # 1 day timeout
-        'prefix' => 'pstore_sid_',  # PStore option
-        'tmpdir' => '/wikk/var/run/apache2',  # PStore option
-        # 'new_session' => ?,#boolean
-        # 'no_hidden' => ?,
-        # 'session_domain' => ?,
-        # 'session_secure' => ?,
-        'session_path' => '/'                        # The cookie gets returned for URLs starting with ...
-        # 'no_cookies' => ?, #boolean
-        # 'suffix' => ?
-      }.merge(extra_arguments)
+    def self.session_config(config, extra_arguments = {})
+      if config.nil?
+        return {
+          'database_manager' => CGI::Session::PStore,  # use PStore
+          'session_key' => '_wikk_rb_sess_id',         # custom session key
+          # 'session_id' => ?,                         # Created for new sessions. Merged in for existing sessions
+          'session_expires' => (Time.now + 86400),     # 1 day timeout
+          'prefix' => 'pstore_sid_',                   # Prefix for pstore file
+          'tmpdir' => '/tmp',                          # PStore option. Under Apache2, this is a private namespace /tmp
+          # 'new_session' => true,                     # Default, is to create a new session if it doesn't already exist
+          # 'no_hidden' => ?,
+          # 'session_domain' => ?,
+          # 'session_secure' => ?,
+          'session_path' => '/'                        # The cookie gets returned for URLs starting with this path
+          # 'no_cookies' => ?, #boolean
+          # 'suffix' => ?
+        }.merge(extra_arguments)
+      else
+        return config.merge(extra_arguments)
+      end
     end
 
     def session_state_init(session_options = {})
@@ -120,7 +119,7 @@ module WIKK
     #  @param return_url [String] We return here if we sucessfully login
     def authenticate(return_url = nil)
       begin
-        @session = CGI::Session.new(@cgi, Web_Auth.session_config({ 'new_session' => false })) # Look for existing session.
+        @session = CGI::Session.new(@cgi, Web_Auth.session_config(@config, { 'new_session' => false })) # Look for existing session.
         return gen_html_login_page(return_url) if @session.nil?
       rescue ArgumentError => _e # if no old session
         return gen_html_login_page(return_url)
@@ -166,7 +165,7 @@ module WIKK
     # Used by calling cgi to generate a standard login page
     #  @param return_url [String] We return here if we sucessfully login
     def gen_html_login_page(return_url = nil)
-      session_options = Web_Auth.session_config
+      session_options = Web_Auth.session_config(@config)
       @session = CGI::Session.new(@cgi, session_options) # Start a new session for future authentications.
       raise 'gen_html_login_page: @session == nil' if @session.nil?
 
