@@ -11,7 +11,7 @@ module WIKK
   #  @attr_reader [String] user , the remote user's user name
   #  @attr_reader [String] session , the persistent Session record for this user
   class Web_Auth
-    VERSION = '0.1.3' # Gem version
+    VERSION = '0.1.4' # Gem version
 
     attr_reader :user, :session
 
@@ -101,14 +101,14 @@ module WIKK
         # 'session_id' => ?,
         'session_expires' => (Time.now + 86400),     # 1 day timeout
         'prefix' => 'pstore_sid_',  # PStore option
-        'tmpdir' => '/tmp'  # PStore option
-        # new_session => ?,#boolean
-        # no_hidden => ?,
-        # session_domain => ?,
-        # session_secure => ?,
-        # session_path => ?,
-        # no_cookies => ?, #boolean
-        # suffix => ?
+        'tmpdir' => '/wikk/var/run/apache2',  # PStore option
+        # 'new_session' => ?,#boolean
+        # 'no_hidden' => ?,
+        # 'session_domain' => ?,
+        # 'session_secure' => ?,
+        'session_path' => '/'                        # The cookie gets returned for URLs starting with ...
+        # 'no_cookies' => ?, #boolean
+        # 'suffix' => ?
       }.merge(extra_arguments)
     end
 
