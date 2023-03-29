@@ -11,7 +11,7 @@ module WIKK
   #  @attr_reader [String] user , the remote user's user name
   #  @attr_reader [String] session , the persistent Session record for this user
   class Web_Auth
-    VERSION = '0.1.4' # Gem version
+    VERSION = '0.1.5' # Gem version
 
     attr_reader :user, :session
 
@@ -22,8 +22,14 @@ module WIKK
     #  @param return_url [String] If we successfully authenticate, return here.
     #  @return [WIKK::Web_Auth]
     def initialize(cgi, pwd_config = nil, return_url = nil, pstore_config: nil)
+      if pwd_config.instance_of?(Hash)
+        sym = pwd_config.each_with_object({}) { |(k, v), h| h[k.to_sym] = v }
+        @config = Struct.new(*(k = sym.keys)).new(*sym.values_at(*k))
+      else
+        @pwd_config = pwd_config
+      end
+
       @cgi = cgi
-      @pwd_config = pwd_config
       @pstore_config = pstore_config
       @user = ''
       @session = nil
@@ -111,8 +117,8 @@ module WIKK
         # 'no_cookies' => ?, #boolean
         # 'suffix' => ?
       }
-      session_conf.merge(pstore_config) if pstore_config.instance_of?(Hash)
-      session_conf.merge(extra_arguments) if extra_arguments.instance_of?(Hash)
+      session_conf.merge!(pstore_config) if pstore_config.instance_of?(Hash)
+      session_conf.merge!(extra_arguments) if extra_arguments.instance_of?(Hash)
       return session_conf
     end
 
@@ -129,31 +135,38 @@ module WIKK
       rescue ArgumentError => _e # if no old session
         return gen_html_login_page(return_url)
       rescue Exception => e # rubocop:disable Lint/RescueException In CGI, we want to handle every exception
-        raise e.code, 'Authenticate, CGI::Session.new ' + e.message
+        @log.error("authenticate(#{@session}):  #{e.message}")
+        raise e.class, 'Authenticate, CGI::Session.new ' + e.message
       end
 
-      @session['auth'] = false if @session['session_expires'] < Time.now || # Session has expired
-                                  @session['ip'] != @cgi.remote_addr || # Not coming from same IP address
-                                  CGI.escapeHTML(@cgi['logout']) != '' # Are trying to logout
+      begin
+        @session['auth'] = false if @session['session_expires'].nil? ||
+                                    @session['session_expires'] < Time.now || # Session has expired
+                                    @session['ip'] != @cgi.remote_addr || # Not coming from same IP address
+                                    CGI.escapeHTML(@cgi['logout']) != '' # Are trying to logout
 
-      return if @session['auth'] == true # if this is true, then we have already authenticated this session.
+        return if @session['auth'] == true # if this is true, then we have already authenticated this session.
 
-      if (challenge = @session['seed']) != '' # see if we are looking at a login response.
-        @user = CGI.escapeHTML(@cgi['Username'])
-        response = CGI.escapeHTML(@cgi['Response'])
-        if @user != '' && response != '' && authorized?(@user, challenge, response)
-          @session['auth'] = true # Response valid.
-          @session['user'] = @user
-          @session['ip'] = @cgi.remote_addr
-          @session['seed'] = '' # Don't use the same one twice.
-          @session.close
-          return
+        if (challenge = @session['seed']) != '' # see if we are looking at a login response.
+          @user = CGI.escapeHTML(@cgi['Username'])
+          response = CGI.escapeHTML(@cgi['Response'])
+          if @user != '' && response != '' && authorized?(@user, challenge, response)
+            @session['auth'] = true # Response valid.
+            @session['user'] = @user
+            @session['ip'] = @cgi.remote_addr
+            @session['seed'] = '' # Don't use the same one twice.
+            @session.close
+            return
+          end
         end
-      end
 
-      @session.delete # Start a new session.
-      gen_html_login_page(return_url)
-      @session.close if @session != nil # Saves the session state.
+        @session.delete # Start a new session.
+        gen_html_login_page(return_url)
+        @session.close if @session != nil # Saves the session state.
+      rescue Exception => e # rubocop:disable Lint/RescueException
+        @log.error("authenticate(#{@session}):  #{e.message}")
+        raise e.class, 'Authenticate, CGI::Session.new ' + e.message
+      end
     end
 
     # clean up the session, setting @authenticated to false and deleting the session state.
@@ -170,7 +183,9 @@ module WIKK
     # Used by calling cgi to generate a standard login page
     #  @param return_url [String] We return here if we sucessfully login
     def gen_html_login_page(return_url = nil)
-      @session = CGI::Session.new(@cgi, Web_Auth.session_config( pstore_config: @pstore_config ) ) # Start a new session for future authentications.
+      session_options = Web_Auth.session_config( pstore_config: @pstore_config )
+      @session = CGI::Session.new(@cgi, session_options ) # Start a new session for future authentications.
+
       raise 'gen_html_login_page: @session == nil' if @session.nil?
 
       challenge = WIKK::AES_256.gen_key_to_s
