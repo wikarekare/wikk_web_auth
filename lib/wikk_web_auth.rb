@@ -21,7 +21,7 @@ module WIKK
     #  @param pstore_config [Hash] overrides default pstore settings
     #  @param return_url [String] If we successfully authenticate, return here.
     #  @return [WIKK::Web_Auth]
-    def initialize(cgi, pwd_config = nil, pstore_config = nil, return_url = nil)
+    def initialize(cgi, pwd_config = nil, return_url = nil, pstore_config = nil)
       @cgi = cgi
       @pwd_config = pwd_config
       @pstore_config = pstore_config
