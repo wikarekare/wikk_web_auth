@@ -20,9 +20,10 @@ module WIKK
     #  @param config [WIKK::Configuration|Hash] the location of the password file is embedded here.
     #  @param return_url [String] If we successfully authenticate, return here.
     #  @return [WIKK::Web_Auth]
-    def initialize(cgi, config = nil, return_url = nil)
+    def initialize(cgi, pwd_config = nil, pstore_config = nil, return_url = nil)
       @cgi = cgi
-      @config = config
+      @pwd_config = pwd_config
+      @pstore_config = pstore_config
       @user = ''
       @session = nil
       begin
@@ -76,7 +77,7 @@ module WIKK
     #  @return [Boolean] True for authorization test suceeded.
     def authorized?(user, challenge, received_hash)
       begin
-        return WIKK::Password.valid_sha256_response?(user, @config, challenge, received_hash)
+        return WIKK::Password.valid_sha256_response?(user, @pwd_config, challenge, received_hash)
       rescue IndexError => e # User didn't exist
         @log.error("authorized?(#{user}) User not found: " + e.message)
         return false
@@ -120,7 +121,7 @@ module WIKK
     #  @param return_url [String] We return here if we sucessfully login
     def authenticate(return_url = nil)
       begin
-        @session = CGI::Session.new(@cgi, Web_Auth.session_config( config_override: @config, extra_arguments: { 'new_session' => false } )) # Look for existing session.
+        @session = CGI::Session.new(@cgi, Web_Auth.session_config( config_override: @pstore_config, extra_arguments: { 'new_session' => false } )) # Look for existing session.
         return gen_html_login_page(return_url) if @session.nil?
       rescue ArgumentError => _e # if no old session
         return gen_html_login_page(return_url)
@@ -166,7 +167,7 @@ module WIKK
     # Used by calling cgi to generate a standard login page
     #  @param return_url [String] We return here if we sucessfully login
     def gen_html_login_page(return_url = nil)
-      @session = CGI::Session.new(@cgi, Web_Auth.session_config( config_override: @config ) ) # Start a new session for future authentications.
+      @session = CGI::Session.new(@cgi, Web_Auth.session_config( config_override: @pstore_config ) ) # Start a new session for future authentications.
       raise 'gen_html_login_page: @session == nil' if @session.nil?
 
       challenge = WIKK::AES_256.gen_key_to_s
