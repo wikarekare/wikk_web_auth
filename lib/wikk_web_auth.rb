@@ -21,7 +21,7 @@ module WIKK
     #  @param pstore_config [Hash] overrides default pstore settings
     #  @param return_url [String] If we successfully authenticate, return here.
     #  @return [WIKK::Web_Auth]
-    def initialize(cgi, pwd_config = nil, return_url = nil, pstore_config = nil)
+    def initialize(cgi, pwd_config = nil, return_url = nil, pstore_config: nil)
       @cgi = cgi
       @pwd_config = pwd_config
       @pstore_config = pstore_config
@@ -41,7 +41,7 @@ module WIKK
     #  @return [Boolean] authenticated == true.
     def self.authenticated?(cgi, pstore_config: nil )
       begin
-        session = CGI::Session.new(cgi, Web_Auth.session_config( pstore_config: pstore_config, extra_arguments: { 'new_session' => false } ) )
+        session = CGI::Session.new(cgi, Web_Auth.session_config( { 'new_session' => false }, pstore_config: pstore_config ) )
         authenticated = (session != nil && session['session_expires'] > Time.now && session['auth'] == true && session['ip'] == cgi.remote_addr)
         session.close # Writes back the session data
         return authenticated
@@ -61,7 +61,7 @@ module WIKK
     #  @param cgi [CGI] Which carries the client data, cookies, and PUT/POST form data.
     def self.logout(cgi, pstore_config: nil)
       begin
-        session = CGI::Session.new(cgi, Web_Auth.session_config( pstore_config: pstore_config, extra_arguments: { 'new_session' => false } ))
+        session = CGI::Session.new(cgi, Web_Auth.session_config( { 'new_session' => false }, pstore_config: pstore_config ))
         session.delete if session != nil
       rescue ArgumentError => e # if no old session
         begin
@@ -94,7 +94,7 @@ module WIKK
     #  @param pstore_config [Hash] Override the default pstore configurations. Only changed keys need to be included
     #  @param extra_arguments [Hash] Extra arguments that get added to the hash. Will also override values with the same key.
     #  @return [Hash] The configuration hash.
-    def self.session_config( pstore_config: nil, extra_arguments: nil )
+    def self.session_config( extra_arguments = nil, pstore_config: nil )
       instance_of?(Hash)
       session_conf = {
         'database_manager' => CGI::Session::PStore,  # use PStore
@@ -124,7 +124,7 @@ module WIKK
     #  @param return_url [String] We return here if we sucessfully login
     def authenticate(return_url = nil)
       begin
-        @session = CGI::Session.new(@cgi, Web_Auth.session_config( pstore_config: @pstore_config, extra_arguments: { 'new_session' => false } )) # Look for existing session.
+        @session = CGI::Session.new(@cgi, Web_Auth.session_config( { 'new_session' => false }, pstore_config: @pstore_config )) # Look for existing session.
         return gen_html_login_page(return_url) if @session.nil?
       rescue ArgumentError => _e # if no old session
         return gen_html_login_page(return_url)
