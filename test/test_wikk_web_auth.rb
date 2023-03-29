@@ -1,5 +1,5 @@
 require 'cgi'
-require 'wikk_web_auth'
+require_relative '../lib/wikk_web_auth.rb'
 require 'wikk_configuration'
 require 'pp'
 
