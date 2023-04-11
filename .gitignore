@@ -5,6 +5,7 @@ pkg/*
 pkg/.DS_Store
 Private/
 test_data/*.out
+test/conf/pstore/*
 .autotest
 .yardoc
 .yard

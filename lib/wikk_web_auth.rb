@@ -15,7 +15,8 @@ module WIKK
   class Web_Auth
     VERSION = '0.1.6' # Gem version
 
-    attr_reader :user, :session
+    attr_reader :user, :challenge
+    attr_accessor :response
 
     # Create new Web_Auth instance, and proceed through authentication process by creating a login web form, if the user isn't authenticated.
     #  @param cgi [CGI] Which carries the client data, cookies, and PUT/POST form data.
@@ -73,6 +74,22 @@ module WIKK
       @return_url = return_url.nil? ? cgi_param(@cgi['ReturnURL']) : return_url
 
       authenticate if run_auth # This generates html output, so it is now conditionally run.
+    end
+
+    # Debug dump of session keys
+    def session_to_s
+      return '' if @session.nil?
+
+      s = '{'
+      [ 'auth', 'seed', 'ip', 'user', 'session_expires' ].each do |k|
+        s += "'#{k}':'#{@session[k]}', "
+      end
+      s += '}'
+      return s
+    end
+
+    def session_id
+      @session.nil? ? '' : @session.session_id
     end
 
     # way of checking without doing a full login sequence.
@@ -139,13 +156,13 @@ module WIKK
         'session_expires' => (Time.now + 86400),     # 1 day timeout
         'prefix' => 'pstore_sid_',                   # Prefix for pstore file
         'tmpdir' => '/tmp',                          # PStore option. Under Apache2, this is a private namespace /tmp
-        'session_path' => '/'                        # The cookie gets returned for URLs starting with this path
+        'session_path' => '/',                       # The cookie gets returned for URLs starting with this path
         # 'session_id' => ?,                         # Created for new sessions. Merged in for existing sessions
         # 'new_session' => true,                     # Default, is to create a new session if it doesn't already exist
-        # 'no_hidden' => ?,
         # 'session_domain' => ?,
         # 'session_secure' => ?,
-        # 'no_cookies' => ?, #boolean
+        'no_cookies' => false,                       # boolean. Do/don't fill in cgi
+        'no_hidden' => false                         # boolean
         # 'suffix' => ?
       }
       session_conf.merge!(pstore_config) if pstore_config.instance_of?(Hash)
@@ -268,8 +285,8 @@ module WIKK
     # @param key [String] name of the CGI param
     # @return [String] Either the value, or ''
     private def cgi_param(key)
-      value = CGI.escapeHTML(@cgi[key])
-      return value.nil? ? '' : value
+      value = @cgi[key]
+      return value.nil? ? '' : CGI.escapeHTML(value)
     end
 
     # Short hand for set up of the pstore session entry
