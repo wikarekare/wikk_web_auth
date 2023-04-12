@@ -67,16 +67,17 @@ web_auth = WIKK::Web_Auth.new(cgi, pwd_conf, return_url, user: user_conf.user, p
 puts "user: #{web_auth.user}"
 puts "Session_id: #{web_auth.session_id}"
 puts "Session: #{web_auth.session_to_s}" # Will be nil, if we haven't had a test for a while
-puts "Cookies: #{cgi.output_cookies}"
+puts "Output_cookies: #{cgi.output_cookies}"
 puts "output_hidden: #{cgi.output_hidden}"
 
 puts
 puts 'Generating the challenge creates a new session, hence a cookie'
 challenge = web_auth.gen_challenge
+session_id = web_auth.session_id    # for reconnect test
 puts "Challenge: #{challenge}"
 puts "Session_id: #{web_auth.session_id}"
 puts "Session: #{web_auth.session_to_s}"
-puts "Cookies: #{cgi.output_cookies}"
+puts "Output_cookies: #{cgi.output_cookies}"
 puts "output_hidden: #{cgi.output_hidden}"
 
 puts
@@ -84,5 +85,31 @@ puts 'Test that the password is accepted'
 # Inject the session cookie
 cgi.cookies['_wikk_rb_sess_id'] = web_auth.session_id
 # Inject the sha256 response
-web_auth.response = Digest::SHA256.digest(user_conf.password + challenge).unpack1('H*')
+response = web_auth.response = Digest::SHA256.digest(user_conf.password + challenge).unpack1('H*')
 puts "Authorized? #{web_auth.valid_response?}"
+
+# Close the session, but don't delete it. We can then test reconnecting
+web_auth.close_session
+
+puts
+puts 'Simulate a return connection.'
+env2 = {
+  'REMOTE_ADDR' => '127.0.0.1',
+  'HTTP_COOKIE' => "_wikk_rb_sess_id=#{session_id};"
+}
+cgi2 = Minimal_CGI.new(env: env2)
+puts "Use self.authenticate? #{WIKK::Web_Auth.authenticated?(cgi2, pstore_config: pstore_conf)}"
+puts
+web_auth2 = WIKK::Web_Auth.new(cgi2, pwd_conf, return_url, user: user_conf.user, response: response, pstore_config: pstore_conf, run_auth: false)
+puts "Session_id: #{web_auth2.session_id}"
+puts "Session: #{web_auth2.session_to_s}"
+puts "cookies: #{cgi2.cookies}"
+puts "Output_cookies: #{cgi2.output_cookies}"
+puts "output_hidden: #{cgi2.output_hidden}"
+puts "Authenticated? #{web_auth2.authenticated?}"
+puts
+puts 'Test a 2nd attempt to login, reusing the previous response (should fail)'
+puts "Authorized? #{web_auth2.valid_response?}"  # Should be false, as the challenge will have been reset to '' to stop replays
+
+# Close the session and delete the pstore entry
+web_auth2.logout
