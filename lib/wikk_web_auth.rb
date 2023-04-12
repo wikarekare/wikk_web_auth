@@ -44,13 +44,18 @@ module WIKK
       @cgi = cgi
       @pstore_config = pstore_config
 
+      # Set variables from the method's params, or alternately, from the CGI params
+      @user = user.nil? ? cgi_param(@cgi['Username']) : user
+      @response = response.nil? ? cgi_param(@cgi['Response']) : response
+      @return_url = return_url.nil? ? cgi_param(@cgi['ReturnURL']) : return_url
+
       # Look for existing session, but don't start a new one.
       begin
         @session = CGI::Session.new(@cgi, Web_Auth.session_config( { 'new_session' => false }, pstore_config: @pstore_config ))
       rescue ArgumentError => _e # if no old session
         @session = nil
       rescue Exception => e # rubocop:disable Lint/RescueException In CGI, we want to handle every exception
-        @log.error("authenticate(#{@session}):  #{e.message}")
+        @log.log(Syslog::LOG_NOTICE, "authenticate(#{@session}):  #{e.message}")
         raise e.class, 'Authenticate, CGI::Session.new ' + e.message
       end
 
@@ -68,11 +73,6 @@ module WIKK
         @challenge = @session['seed'] # Recover the challenge from the pstore entry. It may be ''
       end
 
-      # Set variables from the method's params, or alternately, from the CGI params
-      @user = user.nil? ? cgi_param(@cgi['Username']) : user
-      @response = response.nil? ? cgi_param(@cgi['Response']) : response
-      @return_url = return_url.nil? ? cgi_param(@cgi['ReturnURL']) : return_url
-
       authenticate if run_auth # This generates html output, so it is now conditionally run.
     end
 
@@ -88,6 +88,10 @@ module WIKK
       return s
     end
 
+    # expose the session_id. This is also returned by modifying the cgi instance passed in to initialize
+    # * The cgi.output_cookies Array of Cookies gets modified if no_cookies is false (the default)
+    # * And cgi.output_hidden Hash get modified if no_hidden is false (the default)
+    # @return [String] random session id
     def session_id
       @session.nil? ? '' : @session.session_id
     end
@@ -99,7 +103,7 @@ module WIKK
     def self.authenticated?(cgi, pstore_config: nil )
       begin
         session = CGI::Session.new(cgi, Web_Auth.session_config( { 'new_session' => false }, pstore_config: pstore_config ) )
-        authenticated = (session != nil && !@session['session_expires'].nil? && session['session_expires'] > Time.now && session['auth'] == true && session['ip'] == cgi.remote_addr)
+        authenticated = (session != nil && !session['session_expires'].nil? && session['session_expires'] > Time.now && session['auth'] == true && session['ip'] == cgi.remote_addr)
         session.close # Tidy up, so we don't leak file descriptors
         return authenticated
       rescue ArgumentError => e # if no old session to find.
@@ -108,7 +112,7 @@ module WIKK
         rescue StandardError
           @log = Syslog::Logger.new('wikk_web_auth')
         end
-        @log.error(e.message)
+        @log.log(Syslog::LOG_NOTICE, e.message)
         return false
       end
     end
@@ -117,7 +121,7 @@ module WIKK
     # If this is the only call, then follow this with close_session()
     #  @return [Boolean] True, if this session is authenticated
     def authenticated?
-      @session != nil && !@session['session_expires'].nil? && @session['session_expires'] > Time.now && @session['auth'] == true && session['ip'] == @cgi.remote_addr
+      @session != nil && !@session['session_expires'].nil? && @session['session_expires'] > Time.now && @session['auth'] == true && @session['ip'] == @cgi.remote_addr
     end
 
     # get the session reference and delete the session.
@@ -133,7 +137,7 @@ module WIKK
         rescue StandardError
           @log = Syslog::Logger.new('wikk_web_auth')
         end
-        @log.error(e.message)
+        @log.log(Syslog::LOG_NOTICE, e.message)
       end
     end
 
@@ -155,15 +159,15 @@ module WIKK
         'session_key' => '_wikk_rb_sess_id',         # custom session key
         'session_expires' => (Time.now + 86400),     # 1 day timeout
         'prefix' => 'pstore_sid_',                   # Prefix for pstore file
+        # 'suffix' => ?
         'tmpdir' => '/tmp',                          # PStore option. Under Apache2, this is a private namespace /tmp
         'session_path' => '/',                       # The cookie gets returned for URLs starting with this path
-        # 'session_id' => ?,                         # Created for new sessions. Merged in for existing sessions
         # 'new_session' => true,                     # Default, is to create a new session if it doesn't already exist
         # 'session_domain' => ?,
         # 'session_secure' => ?,
-        'no_cookies' => false,                       # boolean. Do/don't fill in cgi
-        'no_hidden' => false                         # boolean
-        # 'suffix' => ?
+        # 'session_id' => ?,                         # Created for new sessions. Merged in for existing sessions
+        'no_cookies' => false,                       # boolean. Do fill in cgi output_cookies array of Cookies
+        'no_hidden' => false                         # boolean fill in the cgi output_hidden Hash key=cookie, value=session_id
       }
       session_conf.merge!(pstore_config) if pstore_config.instance_of?(Hash)
       session_conf.merge!(extra_arguments) if extra_arguments.instance_of?(Hash)
@@ -234,7 +238,7 @@ module WIKK
         end
         @session.close unless @session.nil? # Saves the session state.
       rescue Exception => e # rubocop:disable Lint/RescueException
-        @log.error("authenticate(#{@session}):  #{e.message}")
+        @log.log(Syslog::LOG_NOTICE, "authenticate(#{@session}):  #{e.message}")
         raise e.class, 'Authenticate, CGI::Session.new ' + e.message
       end
     end
@@ -306,10 +310,10 @@ module WIKK
 
         return WIKK::Password.valid_sha256_response?(@user, @pwd_config, @challenge, @response)
       rescue IndexError => e # User didn't exist
-        @log.error("authorized?(#{@user}) User not found: " + e.message)
+        @log.log(Syslog::LOG_NOTICE, "authorized?(#{@user}) User not found: " + e.message)
         return false
       rescue Exception => e # rubocop:disable Lint/RescueException  # In a cgi, we want to log all errors.
-        @log.error("authorized?(#{@user}): " + e.message)
+        @log.log(Syslog::LOG_NOTICE, "authorized?(#{@user}): " + e.message)
         return false
       end
     end
