@@ -3,7 +3,6 @@ module WIKK
   require 'cgi/session'
   require 'cgi/session/pstore'     # provides CGI::Session::PStore
   require 'digest/sha2'
-  require 'syslog/logger'
   require 'wikk_aes_256'
   require 'wikk_password'
 
@@ -35,12 +34,6 @@ module WIKK
         @pwd_config = pwd_config
       end
 
-      begin
-        @log = Syslog::Logger.syslog
-      rescue StandardError
-        @log = Syslog::Logger.new('wikk_web_auth')
-      end
-
       @cgi = cgi
       @pstore_config = pstore_config
 
@@ -55,7 +48,6 @@ module WIKK
       rescue ArgumentError => _e # if no old session
         @session = nil
       rescue Exception => e # rubocop:disable Lint/RescueException In CGI, we want to handle every exception
-        @log.log(Syslog::LOG_NOTICE, "authenticate(#{@session}):  #{e.message}")
         raise e.class, 'Authenticate, CGI::Session.new ' + e.message
       end
 
@@ -107,12 +99,6 @@ module WIKK
         session.close # Tidy up, so we don't leak file descriptors
         return authenticated
       rescue ArgumentError => e # if no old session to find.
-        begin
-          @log = Syslog::Logger.syslog
-        rescue StandardError
-          @log = Syslog::Logger.new('wikk_web_auth')
-        end
-        @log.log(Syslog::LOG_NOTICE, e.message)
         return false
       end
     end
@@ -131,13 +117,8 @@ module WIKK
       begin
         session = CGI::Session.new(cgi, Web_Auth.session_config( { 'new_session' => false }, pstore_config: pstore_config ))
         session.delete unless session.nil? # Also closes the session
-      rescue ArgumentError => e # if no old session
-        begin
-          @log = Syslog::Logger.syslog
-        rescue StandardError
-          @log = Syslog::Logger.new('wikk_web_auth')
-        end
-        @log.log(Syslog::LOG_NOTICE, e.message)
+      rescue ArgumentError => _e # if no old session
+        # Not an error.
       end
     end
 
@@ -235,7 +216,6 @@ module WIKK
         end
         @session.close unless @session.nil? # Saves the session state.
       rescue Exception => e # rubocop:disable Lint/RescueException
-        @log.log(Syslog::LOG_NOTICE, "authenticate(#{@session}):  #{e.message}")
         raise e.class, 'Authenticate, CGI::Session.new ' + e.message
       end
     end
@@ -329,11 +309,7 @@ module WIKK
                @response.nil? || @response.empty?
           return WIKK::Password.valid_sha256_response?(@user, @pwd_config, @challenge, @response)
         end
-      rescue IndexError => e # User didn't exist
-        @log.log(Syslog::LOG_NOTICE, "authorized?(#{@user}) User not found: " + e.message)
-      rescue Exception => e # rubocop:disable Lint/RescueException  # In a cgi, we want to log all errors.
-        @log.log(Syslog::LOG_NOTICE, "authorized?(#{@user}): " + e.message)
-      end
+      rescue IndexError => _e # User didn't exist
       return false
     end
 
