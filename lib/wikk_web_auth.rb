@@ -146,6 +146,7 @@ module WIKK
       @session.delete unless @session.nil? # Will close the existing session
       @session = nil
       @challenge = '' # no current session, so no challenge string
+      clear_cgi_cookies
     end
 
     # Generate the new Session's config parameters, mixing in and/or overriding the preset values.
@@ -177,17 +178,13 @@ module WIKK
     # Generate a challenge, as step 1 of a login
     # If this is the only call, then follow this with close_session()
     def gen_challenge
-      @session.delete unless @session.nil? # Closes and Deletes the existing session
-      # Start a new session for future authentications.
-      # This resets the expiry timestamp
-      session_options = Web_Auth.session_config( pstore_config: @pstore_config )
-      @session = CGI::Session.new(@cgi, session_options )
-
+      # Short session, which gets replaced if we successfully authenticate
+      new_session( { 'session_expires' => Time.now + 120 } )
       raise 'gen_challenge: @session == nil' if @session.nil?
 
       @challenge = WIKK::AES_256.gen_key_to_s
       # Store the challenge in the pstore, ready for the 2nd login step, along with browser details
-      session_state_init('auth' => false, 'seed' => @challenge, 'ip' => @cgi.remote_addr, 'user' => @user, 'session_expires' => session_options['session_expires'])
+      session_state_init('auth' => false, 'seed' => @challenge, 'ip' => @cgi.remote_addr, 'user' => @user, 'session_expires' => @session_options['session_expires'])
       @session.update
       return @challenge
     end
@@ -196,19 +193,17 @@ module WIKK
     # If this is the only call, then follow this with close_session()
     # @return [Boolean] We got authorized
     def valid_response?
-      if @session.nil? || @challenge == '' # Double check that we aren't getting packets out of order
-        # We didn't store a challenge string, so we shouldn't be here yet
-        return false
-      elsif @user != '' && @response != '' && authorized?
+      if authorized?
         # We got a challenge string, so we are on step 2 of the authentication
         # And have passed the password check ( authorized?() )
-        @session['auth'] = true # Response valid.
-        @challenge = @session['seed'] = '' # Don't use the same challenge twice, so next call will look like a fresh login.
+        new_session # regenerate the cookie with a longer lifetime.
+        raise 'valid_response?: @session == nil' if @session.nil?
+
+        session_state_init('auth' => true, 'seed' => '', 'ip' => @cgi.remote_addr, 'user' => @user, 'session_expires' => @session_options['session_expires'])
         @session.update       # Should also update on close, which we probably do next
         return true
-      else # Failed to authorize
-        @challenge = @session['seed'] = '' # Don't use the same challenge twice, so next call will look like a fresh login.
-        @session.update       # Should also update on close, which we probably do next
+      else # Failed to authorize. The temporary challenge session cookie is no longer valid.
+        logout
         return false
       end
     end
@@ -217,12 +212,15 @@ module WIKK
     #  @param return_url [String] We return here if we sucessfully login. Overrides initialize value
     def authenticate(return_url = nil)
       @return_url = return_url unless return_url.nil? # Update the return url (Backward compatibility)
-      # We have no session setup, or haven't sent the challenge.
+
+      # We have no session setup, or haven't sent the challenge yet.
+      # So we are at step 1 of the authentication
       if @session.nil? || @challenge == ''
         gen_html_login_page
         return
       end
 
+      # We are now at step 2, expecting a response to the challenge
       begin
         # Might be a while since we initialized the class, so repeat this test
         @session['auth'] = false if @session['session_expires'].nil? ||       # Shouldn't ever happen, but has
@@ -232,7 +230,6 @@ module WIKK
 
         return if @session['auth'] == true # if this is true, then we have already authenticated this session.
 
-        # We should be in step 2, expecting a response to the challenge
         unless valid_response?
           gen_html_login_page
         end
@@ -299,6 +296,26 @@ module WIKK
       session_options.each { |k, v| @session[k] = v }
     end
 
+    # Blat the session cookies, that would have been sent back to the server
+    private def clear_cgi_cookies
+      # Update the cgi record, removing the cookies
+      @cgi.instance_eval do
+        @output_hidden = {}
+        @output_cookies = []
+      end
+    end
+
+    # Create a new session in the pstore, having deleted any existing session.
+    # @param session_params [Hash] Optionally alter the session params
+    private def new_session(session_params = nil)
+      @session.delete unless @session.nil? # Closes and Deletes the existing session
+      clear_cgi_cookies
+      # Start a new session for future authentications.
+      # This resets the expiry timestamp
+      @session_options = Web_Auth.session_config( session_params, pstore_config: @pstore_config )
+      @session = CGI::Session.new(@cgi, @session_options )
+    end
+
     # Checks password file to see if the response from the user matches generating a hash from the password locally.
     #  @param user [String] Who the remote user claims to be
     #  @param challenge [String] Random string we sent to this user, and they used in hashing their password.
@@ -306,16 +323,18 @@ module WIKK
     #  @return [Boolean] True for authorization test suceeded.
     private def authorized?
       begin
-        return false if @challenge.nil? || @challenge == ''
-
-        return WIKK::Password.valid_sha256_response?(@user, @pwd_config, @challenge, @response)
+        unless @session.nil? ||
+               @challenge.nil? || @challenge == '' ||
+               @user.nil? || @user.empty? ||
+               @response.nil? || @response.empty?
+          return WIKK::Password.valid_sha256_response?(@user, @pwd_config, @challenge, @response)
+        end
       rescue IndexError => e # User didn't exist
         @log.log(Syslog::LOG_NOTICE, "authorized?(#{@user}) User not found: " + e.message)
-        return false
       rescue Exception => e # rubocop:disable Lint/RescueException  # In a cgi, we want to log all errors.
         @log.log(Syslog::LOG_NOTICE, "authorized?(#{@user}): " + e.message)
-        return false
       end
+      return false
     end
 
     # Login form javascript helper to SHA256 Hash a password and the challenge string sent by the server.
