@@ -99,17 +99,33 @@ env2 = {
 }
 cgi2 = Minimal_CGI.new(env: env2)
 puts "Use self.authenticate? #{WIKK::Web_Auth.authenticated?(cgi2, pstore_config: pstore_conf)}"
+
 puts
 web_auth2 = WIKK::Web_Auth.new(cgi2, pwd_conf, return_url, user: user_conf.user, response: response, pstore_config: pstore_conf, run_auth: false)
+puts "Session_id: #{web_auth2.session_id}"
+puts "Authenticated? #{web_auth2.authenticated?}"
 puts "Session_id: #{web_auth2.session_id}"
 puts "Session: #{web_auth2.session_to_s}"
 puts "cookies: #{cgi2.cookies}"
 puts "Output_cookies: #{cgi2.output_cookies}"
 puts "output_hidden: #{cgi2.output_hidden}"
-puts "Authenticated? #{web_auth2.authenticated?}"
+
 puts
 puts 'Test a 2nd attempt to login, reusing the previous response (should fail)'
 puts "Authorized? #{web_auth2.valid_response?}"  # Should be false, as the challenge will have been reset to '' to stop replays
+puts "Session_id: #{web_auth2.session_id}"
+puts "Session: #{web_auth2.session_to_s}"
+puts "cookies: #{cgi2.cookies}"
+puts "Output_cookies: #{cgi2.output_cookies}"
+puts "output_hidden: #{cgi2.output_hidden}"
+
+puts
+web_auth2.logout
+puts 'Logged out'
+puts "Session_id: #{web_auth2.session_id}"
+puts "Session: #{web_auth2.session_to_s}"
+puts "cookies: #{cgi2.cookies}"
+puts "Output_cookies: #{cgi2.output_cookies}"
+puts "output_hidden: #{cgi2.output_hidden}"
 
 # Close the session and delete the pstore entry
-web_auth2.logout
