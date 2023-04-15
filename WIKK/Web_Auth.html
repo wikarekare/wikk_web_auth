@@ -102,6 +102,8 @@
 <h2>Overview</h2><div class="docstring">
   <div class="discussion">
     <p>Provides common authentication mechanism for all our cgis.
+Uses standard cgi parameters, unless overridden e.g. cgi?user=x&amp;response=y
+Returns values imbedded as hidden fields in the login form
  @attr_reader [String] user , the remote user’s user name
  @attr_reader [String] session , the persistent Session record for this user</p>
 
@@ -133,7 +135,7 @@
 
 </div>
         </dt>
-        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>0.1.5</span><span class='tstring_end'>&#39;</span></span></pre></dd>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>0.1.6</span><span class='tstring_end'>&#39;</span></span></pre></dd>
       
     </dl>
   
@@ -147,7 +149,7 @@
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#session-instance_method" title="#session (instance method)">#<strong>session</strong>  &#x21d2; Object </a>
+      <a href="#challenge-instance_method" title="#challenge (instance method)">#<strong>challenge</strong>  &#x21d2; Object </a>
     
 
     
@@ -166,7 +168,33 @@
   
 
   
-    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute session.</p>
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute challenge.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#response-instance_method" title="#response (instance method)">#<strong>response</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute response.</p>
 </div></span>
   
 </li>
@@ -331,7 +359,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'><p>Test to see if user authenticated,  @return [Boolean] i.e @authenticated’s value.</p>
+    <span class="summary_desc"><div class='inline'><p>Test to see if user authenticated.</p>
 </div></span>
   
 </li>
@@ -340,7 +368,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#authorized%3F-instance_method" title="#authorized? (instance method)">#<strong>authorized?</strong>(user, challenge, received_hash)  &#x21d2; Boolean </a>
+      <a href="#close_session-instance_method" title="#close_session (instance method)">#<strong>close_session</strong>  &#x21d2; Object </a>
     
 
     
@@ -354,7 +382,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'><p>Checks password file to see if the response from the user matches generating a hash from the password locally.</p>
+    <span class="summary_desc"><div class='inline'><p>Ensure we don’t consume all file descriptors Call after last call (though most calls do close the session).</p>
 </div></span>
   
 </li>
@@ -363,7 +391,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#gen_html_login_page-instance_method" title="#gen_html_login_page (instance method)">#<strong>gen_html_login_page</strong>(return_url = nil)  &#x21d2; Object </a>
+      <a href="#gen_challenge-instance_method" title="#gen_challenge (instance method)">#<strong>gen_challenge</strong>  &#x21d2; Object </a>
     
 
     
@@ -377,7 +405,30 @@
   
 
   
-    <span class="summary_desc"><div class='inline'><p>Used by calling cgi to generate a standard login page  @param return_url [String] We return here if we sucessfully login.</p>
+    <span class="summary_desc"><div class='inline'><p>Generate a challenge, as step 1 of a login If this is the only call, then follow this with close_session().</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#gen_html_login_page-instance_method" title="#gen_html_login_page (instance method)">#<strong>gen_html_login_page</strong>(message: &#39;&#39;)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Used by calling cgi to generate a standard login page.</p>
 </div></span>
   
 </li>
@@ -432,7 +483,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(cgi, pwd_config = nil, return_url = nil, pstore_config: nil)  &#x21d2; Web_Auth </a>
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(cgi, pwd_config = nil, return_url = nil, user: nil, response: nil, user_logout: false, pstore_config: nil, run_auth: true)  &#x21d2; Web_Auth </a>
     
 
     
@@ -471,7 +522,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'><p>clean up the session, setting @authenticated to false and deleting the session state.</p>
+    <span class="summary_desc"><div class='inline'><p>clean up the session, deleting the session state.</p>
 </div></span>
   
 </li>
@@ -480,7 +531,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#session_state_init-instance_method" title="#session_state_init (instance method)">#<strong>session_state_init</strong>(session_options = {})  &#x21d2; Object </a>
+      <a href="#session_id-instance_method" title="#session_id (instance method)">#<strong>session_id</strong>  &#x21d2; String </a>
     
 
     
@@ -494,7 +545,53 @@
   
 
   
-    <span class="summary_desc"><div class='inline'>
+    <span class="summary_desc"><div class='inline'><p>expose the session_id.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#session_to_s-instance_method" title="#session_to_s (instance method)">#<strong>session_to_s</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Debug dump of session keys.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#valid_response%3F-instance_method" title="#valid_response? (instance method)">#<strong>valid_response?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Test the response against the password file If this is the only call, then follow this with close_session().</p>
 </div></span>
   
 </li>
@@ -509,7 +606,7 @@
     <div class="method_details first">
   <h3 class="signature first" id="initialize-instance_method">
   
-    #<strong>initialize</strong>(cgi, pwd_config = nil, return_url = nil, pstore_config: nil)  &#x21d2; <tt><span class='object_link'><a href="" title="WIKK::Web_Auth (class)">Web_Auth</a></span></tt> 
+    #<strong>initialize</strong>(cgi, pwd_config = nil, return_url = nil, user: nil, response: nil, user_logout: false, pstore_config: nil, run_auth: true)  &#x21d2; <tt><span class='object_link'><a href="" title="WIKK::Web_Auth (class)">Web_Auth</a></span></tt> 
   
 
   
@@ -520,6 +617,9 @@
     <p>Create new Web_Auth instance, and proceed through authentication process by creating a login web form, if the user isn’t authenticated.
  @param cgi [CGI] Which carries the client data, cookies, and PUT/POST form data.
  @param pwd_config [WIKK::Configuration|Hash] the location of the password file is embedded here.
+ @param user [String] overrides cgi[‘user’]
+ @param response [String] overrides cgi[‘response’]
+ @param user_logout [Boolean] overrides cgi[‘logout’]
  @param pstore_config [Hash] overrides default pstore settings
  @param return_url [String] If we successfully authenticate, return here.
  @return [WIKK::Web_Auth]</p>
@@ -536,11 +636,6 @@
       <pre class="lines">
 
 
-24
-25
-26
-27
-28
 29
 30
 31
@@ -554,12 +649,39 @@
 39
 40
 41
-42</pre>
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 24</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 29</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_cgi'>cgi</span><span class='comma'>,</span> <span class='id identifier rubyid_pwd_config'>pwd_config</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_return_url'>return_url</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>pstore_config:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_cgi'>cgi</span><span class='comma'>,</span> <span class='id identifier rubyid_pwd_config'>pwd_config</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_return_url'>return_url</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>user:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>response:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>user_logout:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>pstore_config:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>run_auth:</span> <span class='kw'>true</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_pwd_config'>pwd_config</span><span class='period'>.</span><span class='id identifier rubyid_instance_of?'>instance_of?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_sym'>sym</span> <span class='op'>=</span> <span class='id identifier rubyid_pwd_config'>pwd_config</span><span class='period'>.</span><span class='id identifier rubyid_each_with_object'>each_with_object</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='lparen'>(</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_h'>h</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_v'>v</span> <span class='rbrace'>}</span>
     <span class='ivar'>@config</span> <span class='op'>=</span> <span class='const'>Struct</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>*</span><span class='lparen'>(</span><span class='id identifier rubyid_k'>k</span> <span class='op'>=</span> <span class='id identifier rubyid_sym'>sym</span><span class='period'>.</span><span class='id identifier rubyid_keys'>keys</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_sym'>sym</span><span class='period'>.</span><span class='id identifier rubyid_values_at'>values_at</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_k'>k</span><span class='rparen'>)</span><span class='rparen'>)</span>
@@ -569,15 +691,37 @@
 
   <span class='ivar'>@cgi</span> <span class='op'>=</span> <span class='id identifier rubyid_cgi'>cgi</span>
   <span class='ivar'>@pstore_config</span> <span class='op'>=</span> <span class='id identifier rubyid_pstore_config'>pstore_config</span>
-  <span class='ivar'>@user</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span>
-  <span class='ivar'>@session</span> <span class='op'>=</span> <span class='kw'>nil</span>
-  <span class='kw'>begin</span>
-    <span class='ivar'>@log</span> <span class='op'>=</span> <span class='const'>Syslog</span><span class='op'>::</span><span class='const'>Logger</span><span class='period'>.</span><span class='id identifier rubyid_syslog'>syslog</span>
-  <span class='kw'>rescue</span> <span class='const'>StandardError</span>
-    <span class='ivar'>@log</span> <span class='op'>=</span> <span class='const'>Syslog</span><span class='op'>::</span><span class='const'>Logger</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>wikk_web_auth</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+
+  <span class='comment'># Set variables from the method&#39;s params, or alternately, from the CGI params
+</span>  <span class='ivar'>@user</span> <span class='op'>=</span> <span class='id identifier rubyid_user'>user</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>?</span> <span class='id identifier rubyid_cgi_param'>cgi_param</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Username</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_user'>user</span>
+  <span class='ivar'>@response</span> <span class='op'>=</span> <span class='id identifier rubyid_response'>response</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>?</span> <span class='id identifier rubyid_cgi_param'>cgi_param</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Response</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_response'>response</span>
+  <span class='ivar'>@return_url</span> <span class='op'>=</span> <span class='id identifier rubyid_return_url'>return_url</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>?</span> <span class='id identifier rubyid_cgi_param'>cgi_param</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ReturnURL</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_return_url'>return_url</span>
+
+  <span class='comment'># Look for existing session, but don&#39;t start a new one.
+</span>  <span class='kw'>begin</span>
+    <span class='ivar'>@session</span> <span class='op'>=</span> <span class='const'>CGI</span><span class='op'>::</span><span class='const'>Session</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='ivar'>@cgi</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="" title="WIKK::Web_Auth (class)">Web_Auth</a></span></span><span class='period'>.</span><span class='id identifier rubyid_session_config'><span class='object_link'><a href="#session_config-class_method" title="WIKK::Web_Auth.session_config (method)">session_config</a></span></span><span class='lparen'>(</span> <span class='lbrace'>{</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>new_session</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='kw'>false</span> <span class='rbrace'>}</span><span class='comma'>,</span> <span class='label'>pstore_config:</span> <span class='ivar'>@pstore_config</span> <span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='kw'>rescue</span> <span class='const'>ArgumentError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid__e'>_e</span> <span class='comment'># if no old session
+</span>    <span class='ivar'>@session</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='kw'>rescue</span> <span class='const'>Exception</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span> <span class='comment'># rubocop:disable Lint/RescueException In CGI, we want to handle every exception
+</span>    <span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Authenticate, CGI::Session.new </span><span class='tstring_end'>&#39;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span>
   <span class='kw'>end</span>
-  <span class='id identifier rubyid_authenticate'>authenticate</span><span class='lparen'>(</span><span class='id identifier rubyid_return_url'>return_url</span><span class='rparen'>)</span>
-<span class='kw'>end</span></pre>
+
+  <span class='kw'>if</span> <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='ivar'>@challenge</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='comment'># there is no current challenge
+</span>  <span class='kw'>elsif</span> <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>||</span>       <span class='comment'># Shouldn&#39;t be the case
+</span>        <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>&lt;</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span> <span class='op'>||</span> <span class='comment'># Session has expired
+</span>        <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ip</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>!=</span> <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_remote_addr'>remote_addr</span> <span class='op'>||</span>     <span class='comment'># Not coming from same IP address
+</span>        <span class='comment'># @session[&#39;user&#39;] != @user ||              # Not the same user
+</span>        <span class='id identifier rubyid_cgi_param'>cgi_param</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>logout</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='op'>!=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='op'>||</span>        <span class='comment'># Requested a logout
+</span>        <span class='id identifier rubyid_user_logout'>user_logout</span>                               <span class='comment'># Alternate way to request a logout
+</span>    <span class='id identifier rubyid_logout'>logout</span>
+  <span class='kw'>else</span>
+    <span class='comment'># We ignore the cgi[&#39;Challenge&#39;] value, and always get this from the pstore
+</span>    <span class='ivar'>@challenge</span> <span class='op'>=</span> <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>seed</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='comment'># Recover the challenge from the pstore entry. It may be &#39;&#39;
+</span>  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_authenticate'>authenticate</span> <span class='kw'>if</span> <span class='id identifier rubyid_run_auth'>run_auth</span> <span class='comment'># This generates html output, so it is now conditionally run.
+</span><span class='kw'>end</span></pre>
     </td>
   </tr>
 </table>
@@ -591,9 +735,9 @@
       
       <span id=""></span>
       <div class="method_details first">
-  <h3 class="signature first" id="session-instance_method">
+  <h3 class="signature first" id="challenge-instance_method">
   
-    #<strong>session</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+    #<strong>challenge</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
   
 
   
@@ -601,7 +745,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>Returns the value of attribute session.</p>
+    <p>Returns the value of attribute challenge.</p>
 
 
   </div>
@@ -615,15 +759,57 @@
       <pre class="lines">
 
 
-16
 17
-18</pre>
+18
+19</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 16</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 17</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_session'>session</span>
-  <span class='ivar'>@session</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_challenge'>challenge</span>
+  <span class='ivar'>@challenge</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="response=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="response-instance_method">
+  
+    #<strong>response</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute response.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+18
+19
+20</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 18</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_response'>response</span>
+  <span class='ivar'>@response</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -657,12 +843,12 @@
       <pre class="lines">
 
 
-16
 17
-18</pre>
+18
+19</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 16</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 17</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_user'>user</span>
   <span class='ivar'>@user</span>
@@ -720,40 +906,28 @@
       <pre class="lines">
 
 
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63</pre>
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 48</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 95</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_authenticated?'>authenticated?</span><span class='lparen'>(</span><span class='id identifier rubyid_cgi'>cgi</span><span class='comma'>,</span> <span class='label'>pstore_config:</span> <span class='kw'>nil</span> <span class='rparen'>)</span>
   <span class='kw'>begin</span>
     <span class='id identifier rubyid_session'>session</span> <span class='op'>=</span> <span class='const'>CGI</span><span class='op'>::</span><span class='const'>Session</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_cgi'>cgi</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="" title="WIKK::Web_Auth (class)">Web_Auth</a></span></span><span class='period'>.</span><span class='id identifier rubyid_session_config'><span class='object_link'><a href="#session_config-class_method" title="WIKK::Web_Auth.session_config (method)">session_config</a></span></span><span class='lparen'>(</span> <span class='lbrace'>{</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>new_session</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='kw'>false</span> <span class='rbrace'>}</span><span class='comma'>,</span> <span class='label'>pstore_config:</span> <span class='id identifier rubyid_pstore_config'>pstore_config</span> <span class='rparen'>)</span> <span class='rparen'>)</span>
-    <span class='id identifier rubyid_authenticated'>authenticated</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_session'>session</span> <span class='op'>!=</span> <span class='kw'>nil</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_session'>session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>&gt;</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_session'>session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>auth</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='kw'>true</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_session'>session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ip</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='id identifier rubyid_cgi'>cgi</span><span class='period'>.</span><span class='id identifier rubyid_remote_addr'>remote_addr</span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_session'>session</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span> <span class='comment'># Writes back the session data
+    <span class='id identifier rubyid_authenticated'>authenticated</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_session'>session</span> <span class='op'>!=</span> <span class='kw'>nil</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_session'>session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_session'>session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>&gt;</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_session'>session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>auth</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='kw'>true</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_session'>session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ip</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='id identifier rubyid_cgi'>cgi</span><span class='period'>.</span><span class='id identifier rubyid_remote_addr'>remote_addr</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_session'>session</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span> <span class='comment'># Tidy up, so we don&#39;t leak file descriptors
 </span>    <span class='kw'>return</span> <span class='id identifier rubyid_authenticated'>authenticated</span>
-  <span class='kw'>rescue</span> <span class='const'>ArgumentError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span> <span class='comment'># if no old session to find.
-</span>    <span class='kw'>begin</span>
-      <span class='ivar'>@log</span> <span class='op'>=</span> <span class='const'>Syslog</span><span class='op'>::</span><span class='const'>Logger</span><span class='period'>.</span><span class='id identifier rubyid_syslog'>syslog</span>
-    <span class='kw'>rescue</span> <span class='const'>StandardError</span>
-      <span class='ivar'>@log</span> <span class='op'>=</span> <span class='const'>Syslog</span><span class='op'>::</span><span class='const'>Logger</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>wikk_web_auth</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
-    <span class='kw'>end</span>
-    <span class='ivar'>@log</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
-    <span class='kw'>return</span> <span class='kw'>false</span>
+  <span class='kw'>rescue</span> <span class='const'>ArgumentError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid__e'>_e</span> <span class='comment'># if no old session to find.
+</span>    <span class='kw'>return</span> <span class='kw'>false</span>
   <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -788,35 +962,25 @@
       <pre class="lines">
 
 
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80</pre>
+116
+117
+118
+119
+120
+121
+122
+123</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 68</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 116</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_logout'>logout</span><span class='lparen'>(</span><span class='id identifier rubyid_cgi'>cgi</span><span class='comma'>,</span> <span class='label'>pstore_config:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>begin</span>
     <span class='id identifier rubyid_session'>session</span> <span class='op'>=</span> <span class='const'>CGI</span><span class='op'>::</span><span class='const'>Session</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_cgi'>cgi</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="" title="WIKK::Web_Auth (class)">Web_Auth</a></span></span><span class='period'>.</span><span class='id identifier rubyid_session_config'><span class='object_link'><a href="#session_config-class_method" title="WIKK::Web_Auth.session_config (method)">session_config</a></span></span><span class='lparen'>(</span> <span class='lbrace'>{</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>new_session</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='kw'>false</span> <span class='rbrace'>}</span><span class='comma'>,</span> <span class='label'>pstore_config:</span> <span class='id identifier rubyid_pstore_config'>pstore_config</span> <span class='rparen'>)</span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_session'>session</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span> <span class='kw'>if</span> <span class='id identifier rubyid_session'>session</span> <span class='op'>!=</span> <span class='kw'>nil</span>
-  <span class='kw'>rescue</span> <span class='const'>ArgumentError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span> <span class='comment'># if no old session
-</span>    <span class='kw'>begin</span>
-      <span class='ivar'>@log</span> <span class='op'>=</span> <span class='const'>Syslog</span><span class='op'>::</span><span class='const'>Logger</span><span class='period'>.</span><span class='id identifier rubyid_syslog'>syslog</span>
-    <span class='kw'>rescue</span> <span class='const'>StandardError</span>
-      <span class='ivar'>@log</span> <span class='op'>=</span> <span class='const'>Syslog</span><span class='op'>::</span><span class='const'>Logger</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>wikk_web_auth</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
-    <span class='kw'>end</span>
-    <span class='ivar'>@log</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
-  <span class='kw'>end</span>
+    <span class='id identifier rubyid_session'>session</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span> <span class='kw'>unless</span> <span class='id identifier rubyid_session'>session</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='comment'># Also closes the session
+</span>  <span class='kw'>rescue</span> <span class='const'>ArgumentError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid__e'>_e</span> <span class='comment'># if no old session
+</span>    <span class='comment'># Not an error.
+</span>  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -851,47 +1015,47 @@
       <pre class="lines">
 
 
-103
-104
-105
-106
-107
-108
-109
-110
-111
-112
-113
-114
-115
-116
-117
-118
-119
-120
-121
-122
-123</pre>
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 103</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 137</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_session_config'>session_config</span><span class='lparen'>(</span> <span class='id identifier rubyid_extra_arguments'>extra_arguments</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>pstore_config:</span> <span class='kw'>nil</span> <span class='rparen'>)</span>
   <span class='id identifier rubyid_instance_of?'>instance_of?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_session_conf'>session_conf</span> <span class='op'>=</span> <span class='lbrace'>{</span>
     <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>database_manager</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='const'>CGI</span><span class='op'>::</span><span class='const'>Session</span><span class='op'>::</span><span class='const'>PStore</span><span class='comma'>,</span>  <span class='comment'># use PStore
-</span>    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_key</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>_wikk_rb_sess_id</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>                <span class='comment'># custom session key
-</span>    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='lparen'>(</span><span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span> <span class='op'>+</span> <span class='int'>86400</span><span class='rparen'>)</span><span class='comma'>,</span>   <span class='comment'># 1 day timeout
-</span>    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>prefix</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>pstore_sid_</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>                          <span class='comment'># Prefix for pstore file
+</span>    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_key</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>_wikk_rb_sess_id</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>         <span class='comment'># custom session key
+</span>    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='lparen'>(</span><span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span> <span class='op'>+</span> <span class='int'>86400</span><span class='rparen'>)</span><span class='comma'>,</span>     <span class='comment'># 1 day timeout
+</span>    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>prefix</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>pstore_sid_</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>                   <span class='comment'># Prefix for pstore file
+</span>    <span class='comment'># &#39;suffix&#39; =&gt; ?
 </span>    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>tmpdir</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>/tmp</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>                          <span class='comment'># PStore option. Under Apache2, this is a private namespace /tmp
-</span>    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_path</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>/</span><span class='tstring_end'>&#39;</span></span>               <span class='comment'># The cookie gets returned for URLs starting with this path
-</span>    <span class='comment'># &#39;session_id&#39; =&gt; ?,                         # Created for new sessions. Merged in for existing sessions
+</span>    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_path</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>/</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>                       <span class='comment'># The cookie gets returned for URLs starting with this path
 </span>    <span class='comment'># &#39;new_session&#39; =&gt; true,                     # Default, is to create a new session if it doesn&#39;t already exist
-</span>    <span class='comment'># &#39;no_hidden&#39; =&gt; ?,
 </span>    <span class='comment'># &#39;session_domain&#39; =&gt; ?,
 </span>    <span class='comment'># &#39;session_secure&#39; =&gt; ?,
-</span>    <span class='comment'># &#39;no_cookies&#39; =&gt; ?, #boolean
-</span>    <span class='comment'># &#39;suffix&#39; =&gt; ?
+</span>    <span class='comment'># &#39;session_id&#39; =&gt; ?,                         # Created for new sessions. Merged in for existing sessions
+</span>    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no_cookies</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='kw'>false</span><span class='comma'>,</span>                       <span class='comment'># boolean. Do fill in cgi output_cookies array of Cookies
+</span>    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no_hidden</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='kw'>false</span>                         <span class='comment'># boolean fill in the cgi output_hidden Hash key=cookie, value=session_id
 </span>  <span class='rbrace'>}</span>
   <span class='id identifier rubyid_session_conf'>session_conf</span><span class='period'>.</span><span class='id identifier rubyid_merge!'>merge!</span><span class='lparen'>(</span><span class='id identifier rubyid_pstore_config'>pstore_config</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_pstore_config'>pstore_config</span><span class='period'>.</span><span class='id identifier rubyid_instance_of?'>instance_of?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_session_conf'>session_conf</span><span class='period'>.</span><span class='id identifier rubyid_merge!'>merge!</span><span class='lparen'>(</span><span class='id identifier rubyid_extra_arguments'>extra_arguments</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_extra_arguments'>extra_arguments</span><span class='period'>.</span><span class='id identifier rubyid_instance_of?'>instance_of?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
@@ -920,7 +1084,7 @@
 </h3><div class="docstring">
   <div class="discussion">
     <p>Test to see if we are already authenticated, and if not, generate an HTML login page.
- @param return_url [String] We return here if we sucessfully login</p>
+ @param return_url [String] We return here if we sucessfully login. Overrides initialize value</p>
 
 
   </div>
@@ -934,88 +1098,66 @@
       <pre class="lines">
 
 
-131
-132
-133
-134
-135
-136
-137
-138
-139
-140
-141
-142
-143
-144
-145
-146
-147
-148
-149
-150
-151
-152
-153
-154
-155
-156
-157
-158
-159
-160
-161
-162
-163
-164
-165
-166
-167
-168
-169
-170</pre>
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 131</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 194</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_authenticate'>authenticate</span><span class='lparen'>(</span><span class='id identifier rubyid_return_url'>return_url</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
-  <span class='kw'>begin</span>
-    <span class='ivar'>@session</span> <span class='op'>=</span> <span class='const'>CGI</span><span class='op'>::</span><span class='const'>Session</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='ivar'>@cgi</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="" title="WIKK::Web_Auth (class)">Web_Auth</a></span></span><span class='period'>.</span><span class='id identifier rubyid_session_config'><span class='object_link'><a href="#session_config-class_method" title="WIKK::Web_Auth.session_config (method)">session_config</a></span></span><span class='lparen'>(</span> <span class='lbrace'>{</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>new_session</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='kw'>false</span> <span class='rbrace'>}</span><span class='comma'>,</span> <span class='label'>pstore_config:</span> <span class='ivar'>@pstore_config</span> <span class='rparen'>)</span><span class='rparen'>)</span> <span class='comment'># Look for existing session.
-</span>    <span class='kw'>return</span> <span class='id identifier rubyid_gen_html_login_page'>gen_html_login_page</span><span class='lparen'>(</span><span class='id identifier rubyid_return_url'>return_url</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
-  <span class='kw'>rescue</span> <span class='const'>ArgumentError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid__e'>_e</span> <span class='comment'># if no old session
-</span>    <span class='kw'>return</span> <span class='id identifier rubyid_gen_html_login_page'>gen_html_login_page</span><span class='lparen'>(</span><span class='id identifier rubyid_return_url'>return_url</span><span class='rparen'>)</span>
-  <span class='kw'>rescue</span> <span class='const'>Exception</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span> <span class='comment'># rubocop:disable Lint/RescueException In CGI, we want to handle every exception
-</span>    <span class='ivar'>@log</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>authenticate(</span><span class='embexpr_beg'>#{</span><span class='ivar'>@session</span><span class='embexpr_end'>}</span><span class='tstring_content'>):  </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Authenticate, CGI::Session.new </span><span class='tstring_end'>&#39;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span>
+  <span class='ivar'>@return_url</span> <span class='op'>=</span> <span class='id identifier rubyid_return_url'>return_url</span> <span class='kw'>unless</span> <span class='id identifier rubyid_return_url'>return_url</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='comment'># Update the return url (Backward compatibility)
+</span>
+  <span class='comment'># We have no session setup, or haven&#39;t sent the challenge yet.
+</span>  <span class='comment'># So we are at step 1 of the authentication
+</span>  <span class='kw'>if</span> <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>||</span> <span class='ivar'>@challenge</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span>
+    <span class='id identifier rubyid_gen_html_login_page'>gen_html_login_page</span><span class='lparen'>(</span><span class='label'>message:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no current challenge</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+    <span class='kw'>return</span>
   <span class='kw'>end</span>
 
-  <span class='kw'>begin</span>
-    <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>auth</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>false</span> <span class='kw'>if</span> <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>||</span>
-                                <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>&lt;</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span> <span class='op'>||</span> <span class='comment'># Session has expired
-</span>                                <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ip</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>!=</span> <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_remote_addr'>remote_addr</span> <span class='op'>||</span> <span class='comment'># Not coming from same IP address
-</span>                                <span class='const'>CGI</span><span class='period'>.</span><span class='id identifier rubyid_escapeHTML'>escapeHTML</span><span class='lparen'>(</span><span class='ivar'>@cgi</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>logout</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='op'>!=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='comment'># Are trying to logout
+  <span class='comment'># We are now at step 2, expecting a response to the challenge
+</span>  <span class='kw'>begin</span>
+    <span class='comment'># Might be a while since we initialized the class, so repeat this test
+</span>    <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>auth</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>false</span> <span class='kw'>if</span> <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>||</span>       <span class='comment'># Shouldn&#39;t ever happen, but has
+</span>                                <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>&lt;</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span> <span class='op'>||</span> <span class='comment'># Session has expired
+</span>                                <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ip</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>!=</span> <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_remote_addr'>remote_addr</span> <span class='comment'># ||     # Not coming from same IP address
+</span>    <span class='comment'>#                           @session[&#39;user&#39;] != @user                 # Username not the same as the session
 </span>
     <span class='kw'>return</span> <span class='kw'>if</span> <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>auth</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='kw'>true</span> <span class='comment'># if this is true, then we have already authenticated this session.
 </span>
-    <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_challenge'>challenge</span> <span class='op'>=</span> <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>seed</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='op'>!=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='comment'># see if we are looking at a login response.
-</span>      <span class='ivar'>@user</span> <span class='op'>=</span> <span class='const'>CGI</span><span class='period'>.</span><span class='id identifier rubyid_escapeHTML'>escapeHTML</span><span class='lparen'>(</span><span class='ivar'>@cgi</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Username</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span>
-      <span class='id identifier rubyid_response'>response</span> <span class='op'>=</span> <span class='const'>CGI</span><span class='period'>.</span><span class='id identifier rubyid_escapeHTML'>escapeHTML</span><span class='lparen'>(</span><span class='ivar'>@cgi</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Response</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span>
-      <span class='kw'>if</span> <span class='ivar'>@user</span> <span class='op'>!=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_response'>response</span> <span class='op'>!=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_authorized?'>authorized?</span><span class='lparen'>(</span><span class='ivar'>@user</span><span class='comma'>,</span> <span class='id identifier rubyid_challenge'>challenge</span><span class='comma'>,</span> <span class='id identifier rubyid_response'>response</span><span class='rparen'>)</span>
-        <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>auth</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>true</span> <span class='comment'># Response valid.
-</span>        <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>user</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='ivar'>@user</span>
-        <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ip</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_remote_addr'>remote_addr</span>
-        <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>seed</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='comment'># Don&#39;t use the same one twice.
-</span>        <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
-        <span class='kw'>return</span>
-      <span class='kw'>end</span>
+    <span class='id identifier rubyid_hold_challenge'>hold_challenge</span> <span class='op'>=</span> <span class='ivar'>@challenge</span>
+    <span class='kw'>unless</span> <span class='id identifier rubyid_valid_response?'>valid_response?</span>
+      <span class='id identifier rubyid_gen_html_login_page'>gen_html_login_page</span><span class='lparen'>(</span><span class='label'>message:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>invalid response: &#39;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@user</span><span class='embexpr_end'>}</span><span class='tstring_content'>&#39; &#39;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_hold_challenge'>hold_challenge</span><span class='embexpr_end'>}</span><span class='tstring_content'>&#39; &#39;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@response</span><span class='embexpr_end'>}</span><span class='tstring_content'>&#39;</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
     <span class='kw'>end</span>
-
-    <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span> <span class='comment'># Start a new session.
-</span>    <span class='id identifier rubyid_gen_html_login_page'>gen_html_login_page</span><span class='lparen'>(</span><span class='id identifier rubyid_return_url'>return_url</span><span class='rparen'>)</span>
-    <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span> <span class='kw'>if</span> <span class='ivar'>@session</span> <span class='op'>!=</span> <span class='kw'>nil</span> <span class='comment'># Saves the session state.
+    <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span> <span class='kw'>unless</span> <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='comment'># Saves the session state.
 </span>  <span class='kw'>rescue</span> <span class='const'>Exception</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span> <span class='comment'># rubocop:disable Lint/RescueException
-</span>    <span class='ivar'>@log</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>authenticate(</span><span class='embexpr_beg'>#{</span><span class='ivar'>@session</span><span class='embexpr_end'>}</span><span class='tstring_content'>):  </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Authenticate, CGI::Session.new </span><span class='tstring_end'>&#39;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span>
+</span>    <span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Authenticate, CGI::Session.new </span><span class='tstring_end'>&#39;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span>
   <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -1034,8 +1176,9 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>Test to see if user authenticated,
- @return [Boolean] i.e @authenticated’s value.</p>
+    <p>Test to see if user authenticated.
+If this is the only call, then follow this with close_session()
+ @return [Boolean] True, if this session is authenticated</p>
 
 
   </div>
@@ -1062,15 +1205,15 @@
       <pre class="lines">
 
 
-179
-180
-181</pre>
+109
+110
+111</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 179</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 109</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_authenticated?'>authenticated?</span>
-  <span class='ivar'>@session</span> <span class='op'>!=</span> <span class='kw'>nil</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>&gt;</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>auth</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='kw'>true</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_session'>session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ip</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_remote_addr'>remote_addr</span>
+  <span class='ivar'>@session</span> <span class='op'>!=</span> <span class='kw'>nil</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>&gt;</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>auth</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='kw'>true</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ip</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_remote_addr'>remote_addr</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1078,9 +1221,9 @@
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="authorized?-instance_method">
+  <h3 class="signature " id="close_session-instance_method">
   
-    #<strong>authorized?</strong>(user, challenge, received_hash)  &#x21d2; <tt>Boolean</tt> 
+    #<strong>close_session</strong>  &#x21d2; <tt>Object</tt> 
   
 
   
@@ -1088,30 +1231,14 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>Checks password file to see if the response from the user matches generating a hash from the password locally.
- @param user [String] Who the remote user claims to be
- @param challenge [String] Random string we sent to this user, and they used in hashing their password.
- @param received_hash [String] The hex_SHA256(password + challenge) string that the user sent back.
- @return [Boolean] True for authorization test suceeded.</p>
+    <p>Ensure we don’t consume all file descriptors
+Call after last call (though most calls do close the session)</p>
 
 
   </div>
 </div>
 <div class="tags">
   
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Boolean</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
 
 </div><table class="source_code">
   <tr>
@@ -1119,31 +1246,74 @@
       <pre class="lines">
 
 
-87
-88
-89
-90
-91
-92
-93
-94
-95
-96
-97</pre>
+226
+227
+228
+229</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 87</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 226</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_authorized?'>authorized?</span><span class='lparen'>(</span><span class='id identifier rubyid_user'>user</span><span class='comma'>,</span> <span class='id identifier rubyid_challenge'>challenge</span><span class='comma'>,</span> <span class='id identifier rubyid_received_hash'>received_hash</span><span class='rparen'>)</span>
-  <span class='kw'>begin</span>
-    <span class='kw'>return</span> <span class='const'><span class='object_link'><a href="../WIKK.html" title="WIKK (module)">WIKK</a></span></span><span class='op'>::</span><span class='const'>Password</span><span class='period'>.</span><span class='id identifier rubyid_valid_sha256_response?'>valid_sha256_response?</span><span class='lparen'>(</span><span class='id identifier rubyid_user'>user</span><span class='comma'>,</span> <span class='ivar'>@pwd_config</span><span class='comma'>,</span> <span class='id identifier rubyid_challenge'>challenge</span><span class='comma'>,</span> <span class='id identifier rubyid_received_hash'>received_hash</span><span class='rparen'>)</span>
-  <span class='kw'>rescue</span> <span class='const'>IndexError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span> <span class='comment'># User didn&#39;t exist
-</span>    <span class='ivar'>@log</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>authorized?(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_user'>user</span><span class='embexpr_end'>}</span><span class='tstring_content'>) User not found: </span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
-    <span class='kw'>return</span> <span class='kw'>false</span>
-  <span class='kw'>rescue</span> <span class='const'>Exception</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span> <span class='comment'># rubocop:disable Lint/RescueException  # In a cgi, we want to log all errors.
-</span>    <span class='ivar'>@log</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>authorized?(</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_user'>user</span><span class='embexpr_end'>}</span><span class='tstring_content'>): </span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
-    <span class='kw'>return</span> <span class='kw'>false</span>
-  <span class='kw'>end</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_close_session'>close_session</span>
+  <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span> <span class='kw'>unless</span> <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+  <span class='ivar'>@session</span> <span class='op'>=</span> <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="gen_challenge-instance_method">
+  
+    #<strong>gen_challenge</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Generate a challenge, as step 1 of a login
+If this is the only call, then follow this with close_session()</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 161</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_gen_challenge'>gen_challenge</span>
+  <span class='comment'># Short session, which gets replaced if we successfully authenticate
+</span>  <span class='id identifier rubyid_new_session'>new_session</span><span class='lparen'>(</span> <span class='lbrace'>{</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span> <span class='op'>+</span> <span class='int'>120</span> <span class='rbrace'>}</span> <span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>gen_challenge: @session == nil</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>if</span> <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+  <span class='ivar'>@challenge</span> <span class='op'>=</span> <span class='const'>SecureRandom</span><span class='period'>.</span><span class='id identifier rubyid_base64'>base64</span><span class='lparen'>(</span><span class='int'>32</span><span class='rparen'>)</span>
+  <span class='comment'># Store the challenge in the pstore, ready for the 2nd login step, along with browser details
+</span>  <span class='id identifier rubyid_session_state_init'>session_state_init</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>auth</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>seed</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='ivar'>@challenge</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ip</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_remote_addr'>remote_addr</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>user</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='ivar'>@user</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='ivar'>@session_options</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span>
+  <span class='kw'>return</span> <span class='ivar'>@challenge</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1153,7 +1323,7 @@
       <div class="method_details ">
   <h3 class="signature " id="gen_html_login_page-instance_method">
   
-    #<strong>gen_html_login_page</strong>(return_url = nil)  &#x21d2; <tt>Object</tt> 
+    #<strong>gen_html_login_page</strong>(message: &#39;&#39;)  &#x21d2; <tt>Object</tt> 
   
 
   
@@ -1161,8 +1331,7 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>Used by calling cgi to generate a standard login page
- @param return_url [String] We return here if we sucessfully login</p>
+    <p>Used by calling cgi to generate a standard login page</p>
 
 
   </div>
@@ -1176,43 +1345,29 @@
       <pre class="lines">
 
 
-185
-186
-187
-188
-189
-190
-191
-192
-193
-194
-195
-196
-197
-198
-199
-200
-201</pre>
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 185</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 232</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_gen_html_login_page'>gen_html_login_page</span><span class='lparen'>(</span><span class='id identifier rubyid_return_url'>return_url</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_session_options'>session_options</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="" title="WIKK::Web_Auth (class)">Web_Auth</a></span></span><span class='period'>.</span><span class='id identifier rubyid_session_config'><span class='object_link'><a href="#session_config-class_method" title="WIKK::Web_Auth.session_config (method)">session_config</a></span></span><span class='lparen'>(</span> <span class='label'>pstore_config:</span> <span class='ivar'>@pstore_config</span> <span class='rparen'>)</span>
-  <span class='ivar'>@session</span> <span class='op'>=</span> <span class='const'>CGI</span><span class='op'>::</span><span class='const'>Session</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='ivar'>@cgi</span><span class='comma'>,</span> <span class='id identifier rubyid_session_options'>session_options</span> <span class='rparen'>)</span> <span class='comment'># Start a new session for future authentications.
-</span>
-  <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>gen_html_login_page: @session == nil</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>if</span> <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
-
-  <span class='id identifier rubyid_challenge'>challenge</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../WIKK.html" title="WIKK (module)">WIKK</a></span></span><span class='op'>::</span><span class='const'>AES_256</span><span class='period'>.</span><span class='id identifier rubyid_gen_key_to_s'>gen_key_to_s</span>
-  <span class='id identifier rubyid_session_state_init'>session_state_init</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>auth</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>seed</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_challenge'>challenge</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ip</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_remote_addr'>remote_addr</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_session_options'>session_options</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_gen_html_login_page'>gen_html_login_page</span><span class='lparen'>(</span><span class='label'>message:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_gen_challenge'>gen_challenge</span>
   <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_header'>header</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>type</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>text/html</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_out'>out</span> <span class='kw'>do</span>
     <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_html'>html</span> <span class='kw'>do</span>
       <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_head'>head</span> <span class='lbrace'>{</span> <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_title'>title</span> <span class='lbrace'>{</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>login</span><span class='tstring_end'>&#39;</span></span> <span class='rbrace'>}</span> <span class='op'>+</span> <span class='id identifier rubyid_html_nocache'>html_nocache</span> <span class='op'>+</span> <span class='id identifier rubyid_html_script'>html_script</span> <span class='rbrace'>}</span> <span class='op'>+</span>
-        <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_body'>body</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_html_login_form'>html_login_form</span><span class='lparen'>(</span><span class='id identifier rubyid_user'>user</span><span class='comma'>,</span> <span class='id identifier rubyid_challenge'>challenge</span><span class='comma'>,</span> <span class='id identifier rubyid_return_url'>return_url</span><span class='rparen'>)</span> <span class='op'>+</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span>
+        <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_body'>body</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_html_login_form'>html_login_form</span><span class='lparen'>(</span><span class='label'>message:</span> <span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span> <span class='op'>+</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span>
     <span class='kw'>end</span>
   <span class='kw'>end</span>
-  <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1246,16 +1401,16 @@
       <pre class="lines">
 
 
-218
-219
-220
-221
-222
-223
-224</pre>
+258
+259
+260
+261
+262
+263
+264</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 218</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 258</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_html_logout_form'>html_logout_form</span><span class='lparen'>(</span><span class='id identifier rubyid_cgi_dir'>cgi_dir</span><span class='rparen'>)</span>
   <span class='heredoc_beg'>&lt;&lt;~HTML</span>
@@ -1297,16 +1452,16 @@ Called by calling cgi, when constructing their html headers.
       <pre class="lines">
 
 
-207
-208
-209
-210
-211
-212
-213</pre>
+247
+248
+249
+250
+251
+252
+253</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 207</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 247</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_html_reload'>html_reload</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_url'>url</span> <span class='op'>!=</span> <span class='kw'>nil</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_url'>url</span> <span class='op'>!=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span>
@@ -1331,7 +1486,7 @@ Called by calling cgi, when constructing their html headers.
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>clean up the session, setting @authenticated to false and deleting the session state.</p>
+    <p>clean up the session, deleting the session state.</p>
 
 
   </div>
@@ -1345,15 +1500,21 @@ Called by calling cgi, when constructing their html headers.
       <pre class="lines">
 
 
-173
-174
-175</pre>
+126
+127
+128
+129
+130
+131</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 173</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 126</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_logout'>logout</span>
-  <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span> <span class='kw'>if</span> <span class='ivar'>@session</span> <span class='op'>!=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span> <span class='kw'>unless</span> <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='comment'># Will close the existing session
+</span>  <span class='ivar'>@session</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@challenge</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='comment'># no current session, so no challenge string
+</span>  <span class='id identifier rubyid_clear_cgi_cookies'>clear_cgi_cookies</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1361,29 +1522,194 @@ Called by calling cgi, when constructing their html headers.
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="session_state_init-instance_method">
+  <h3 class="signature " id="session_id-instance_method">
   
-    #<strong>session_state_init</strong>(session_options = {})  &#x21d2; <tt>Object</tt> 
-  
-
+    #<strong>session_id</strong>  &#x21d2; <tt>String</tt> 
   
 
   
-</h3><table class="source_code">
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>expose the session_id. This is also returned by modifying the cgi instance passed in to initialize
+* The cgi.output_cookies Array of Cookies gets modified if no_cookies is false (the default)
+* And cgi.output_hidden Hash get modified if no_hidden is false (the default)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>random session id</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
   <tr>
     <td>
       <pre class="lines">
 
 
-125
-126
-127</pre>
+87
+88
+89</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 125</span>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 87</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_session_state_init'>session_state_init</span><span class='lparen'>(</span><span class='id identifier rubyid_session_options'>session_options</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_session_options'>session_options</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='ivar'>@session</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_v'>v</span> <span class='rbrace'>}</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_session_id'>session_id</span>
+  <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='op'>:</span> <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_session_id'>session_id</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="session_to_s-instance_method">
+  
+    #<strong>session_to_s</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Debug dump of session keys</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 72</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_session_to_s'>session_to_s</span>
+  <span class='kw'>return</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>if</span> <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+  <span class='id identifier rubyid_s'>s</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>{</span><span class='tstring_end'>&#39;</span></span>
+  <span class='lbracket'>[</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>auth</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>seed</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ip</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>user</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span> <span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='op'>|</span>
+    <span class='id identifier rubyid_s'>s</span> <span class='op'>+=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&#39;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_k'>k</span><span class='embexpr_end'>}</span><span class='tstring_content'>&#39;:&#39;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@session</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_content'>&#39;, </span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_s'>s</span> <span class='op'>+=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>}</span><span class='tstring_end'>&#39;</span></span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_s'>s</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="valid_response?-instance_method">
+  
+    #<strong>valid_response?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Test the response against the password file
+If this is the only call, then follow this with close_session()</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>We got authorized</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/wikk_web_auth.rb', line 176</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_valid_response?'>valid_response?</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_authorized?'>authorized?</span>
+    <span class='comment'># We got a challenge string, so we are on step 2 of the authentication
+</span>    <span class='comment'># And have passed the password check ( authorized?() )
+</span>    <span class='id identifier rubyid_new_session'>new_session</span> <span class='comment'># regenerate the cookie with a longer lifetime.
+</span>    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>valid_response?: @session == nil</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>if</span> <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+    <span class='id identifier rubyid_session_state_init'>session_state_init</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>auth</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>seed</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ip</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='ivar'>@cgi</span><span class='period'>.</span><span class='id identifier rubyid_remote_addr'>remote_addr</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>user</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='ivar'>@user</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='ivar'>@session_options</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>session_expires</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='ivar'>@session</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span>       <span class='comment'># Should also update on close, which we probably do next
+</span>    <span class='kw'>return</span> <span class='kw'>true</span>
+  <span class='kw'>else</span> <span class='comment'># Failed to authorize. The temporary challenge session cookie is no longer valid.
+</span>    <span class='id identifier rubyid_logout'>logout</span>
+    <span class='kw'>return</span> <span class='kw'>false</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1395,7 +1721,7 @@ Called by calling cgi, when constructing their html headers.
 </div>
 
       <div id="footer">
-  Generated on Wed Mar 29 22:04:03 2023 by
+  Generated on Sat Apr 15 22:00:15 2023 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.28 (ruby-3.1.2).
 </div>
