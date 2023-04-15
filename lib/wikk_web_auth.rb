@@ -3,7 +3,7 @@ module WIKK
   require 'cgi/session'
   require 'cgi/session/pstore'     # provides CGI::Session::PStore
   require 'digest/sha2'
-  require 'wikk_aes_256'
+  require 'securerandom'
   require 'wikk_password'
 
   # Provides common authentication mechanism for all our cgis.
@@ -38,9 +38,9 @@ module WIKK
       @pstore_config = pstore_config
 
       # Set variables from the method's params, or alternately, from the CGI params
-      @user = user.nil? ? cgi_param(@cgi['Username']) : user
-      @response = response.nil? ? cgi_param(@cgi['Response']) : response
-      @return_url = return_url.nil? ? cgi_param(@cgi['ReturnURL']) : return_url
+      @user = user.nil? ? cgi_param('Username') : user
+      @response = response.nil? ? cgi_param('Response') : response
+      @return_url = return_url.nil? ? cgi_param('ReturnURL') : return_url
 
       # Look for existing session, but don't start a new one.
       begin
@@ -56,8 +56,8 @@ module WIKK
       elsif @session['session_expires'].nil? ||       # Shouldn't be the case
             @session['session_expires'] < Time.now || # Session has expired
             @session['ip'] != @cgi.remote_addr ||     # Not coming from same IP address
-            @session['user'] != @user ||              # Not the same user
-            cgi_param(@cgi['logout']) != '' ||        # Requested a logout
+            # @session['user'] != @user ||              # Not the same user
+            cgi_param('logout') != '' ||        # Requested a logout
             user_logout                               # Alternate way to request a logout
         logout
       else
@@ -98,7 +98,7 @@ module WIKK
         authenticated = (session != nil && !session['session_expires'].nil? && session['session_expires'] > Time.now && session['auth'] == true && session['ip'] == cgi.remote_addr)
         session.close # Tidy up, so we don't leak file descriptors
         return authenticated
-      rescue ArgumentError => e # if no old session to find.
+      rescue ArgumentError => _e # if no old session to find.
         return false
       end
     end
@@ -163,7 +163,7 @@ module WIKK
       new_session( { 'session_expires' => Time.now + 120 } )
       raise 'gen_challenge: @session == nil' if @session.nil?
 
-      @challenge = WIKK::AES_256.gen_key_to_s
+      @challenge = SecureRandom.base64(32)
       # Store the challenge in the pstore, ready for the 2nd login step, along with browser details
       session_state_init('auth' => false, 'seed' => @challenge, 'ip' => @cgi.remote_addr, 'user' => @user, 'session_expires' => @session_options['session_expires'])
       @session.update
@@ -197,7 +197,7 @@ module WIKK
       # We have no session setup, or haven't sent the challenge yet.
       # So we are at step 1 of the authentication
       if @session.nil? || @challenge == ''
-        gen_html_login_page
+        gen_html_login_page(message: 'no current challenge')
         return
       end
 
@@ -206,13 +206,13 @@ module WIKK
         # Might be a while since we initialized the class, so repeat this test
         @session['auth'] = false if @session['session_expires'].nil? ||       # Shouldn't ever happen, but has
                                     @session['session_expires'] < Time.now || # Session has expired
-                                    @session['ip'] != @cgi.remote_addr ||     # Not coming from same IP address
-                                    @session['user'] != @user                 # Username not the same as the session
+                                    @session['ip'] != @cgi.remote_addr # ||     # Not coming from same IP address
+        #                           @session['user'] != @user                 # Username not the same as the session
 
         return if @session['auth'] == true # if this is true, then we have already authenticated this session.
 
         unless valid_response?
-          gen_html_login_page
+          gen_html_login_page(message: 'invalid response:')
         end
         @session.close unless @session.nil? # Saves the session state.
       rescue Exception => e # rubocop:disable Lint/RescueException
@@ -228,13 +228,13 @@ module WIKK
     end
 
     # Used by calling cgi to generate a standard login page
-    def gen_html_login_page
+    def gen_html_login_page(message: '')
       gen_challenge
       @cgi.header('type' => 'text/html')
       @cgi.out do
         @cgi.html do
           @cgi.head { @cgi.title { 'login' } + html_nocache + html_script } +
-            @cgi.body { html_login_form + "\n" }
+            @cgi.body { html_login_form(message: message) + "\n" }
         end
       end
     end
@@ -340,12 +340,13 @@ module WIKK
     #  @param challenge [String] Random bytes to add to password, before sending back to server.
     #  @param return_url [String] We return here if we sucessfully login. Overrides initialize value
     #  @return [String] Login form to embed in html response to user.
-    private def html_login_form
+    private def html_login_form(message: '')
       <<~HTML
         <form NAME="login" ACTION="/ruby/login.rbx" METHOD="post">
         <input TYPE="hidden" NAME="Challenge" VALUE="#{@challenge}">
         <input TYPE="hidden" NAME="Response" VALUE="">
         <input TYPE="hidden" NAME="ReturnURL" VALUE="#{@return_url}">
+        <span hidden>#{message}</span>
         <table>
         <tr><th>User name</th><td><input TYPE="text" NAME="Username" VALUE="#{@user}" SIZE="32" MAXLENGTH="32"></td></tr>
         <tr><th>Password</th><td><input TYPE="password" NAME="Password" VALUE="" SIZE="32" MAXLENGTH="32"></td></tr>
