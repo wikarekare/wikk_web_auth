@@ -310,6 +310,8 @@ module WIKK
           return WIKK::Password.valid_sha256_response?(@user, @pwd_config, @challenge, @response)
         end
       rescue IndexError => _e # User didn't exist
+        # Not an error.
+      end
       return false
     end
 
